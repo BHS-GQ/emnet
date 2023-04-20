@@ -2,3 +2,4 @@ generator/.venv
 generator/.venv/*
 generator/generated
 generator/generated/*
+*__pycache__*
