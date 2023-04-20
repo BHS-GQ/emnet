@@ -1,9 +1,13 @@
-# $1 ip
-# $2 .pem file
-# $3 test_dir (in aws)
-# $4 reports_dir (in aws) - /home/ubuntu/reports
+: '
+$1 - Test directory (in AWS)
+$2 - Reports directory (in AWS) (ex. /home/ubuntu/reports)
+$3 - Target directory (local; in data/)
+'
 
-ssh -i $2 ubuntu@${1} "mkdir -p $4; cd $3; ./report_fetcher.sh $4"
-mkdir data/_tmp
-scp -i $2 -r ubuntu@${1}:$4/* data/_tmp
-ssh -i $2 ubuntu@${1} "rm -r $4"
+
+source ./.env
+
+ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP "mkdir -p $2; cd $1; ./report_fetcher.sh $2"
+mkdir data/$3
+scp -i $AWS_PEM_FILE -r ubuntu@$AWS_IP:$2/* data/_tmp
+ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP "rm -r $2"

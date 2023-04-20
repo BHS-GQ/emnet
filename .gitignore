@@ -5,3 +5,4 @@ generator/_*
 *__pycache__*
 *.pem
 _*
+.env

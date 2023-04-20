@@ -1,12 +1,15 @@
-# $1 ip
-# $2 test_dir
-# $3 .pem file
-# $4 output_dir (in aws)
+: '
+$1 - Test directory (local)
+$2 - Output test directory (in AWS)
+'
 
-tar -czvf tests.tar.gz $2
-scp -i $3 tests.tar.gz ubuntu@${1}:/home/ubuntu/
 
-ssh -i $3 ubuntu@${1} "mkdir $4"
-ssh -i $3 ubuntu@${1} "tar -xzvf tests.tar.gz -C $4 --strip-components=2"
-ssh -i $3 ubuntu@${1} 'rm -f tests.tar.gz'
+source ./.env
+
+tar -czvf tests.tar.gz $1
+scp -i $AWS_PEM_FILE tests.tar.gz ubuntu@$AWS_IP:/home/ubuntu/
+
+ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP "mkdir $2"
+ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP "tar -xzvf tests.tar.gz -C $2 --strip-components=2"
+ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP 'rm -f tests.tar.gz'
 rm -f tests.tar.gz
