@@ -1,6 +1,5 @@
 .venv
 .venv/*
 generator/.venv/*
-generator/_output
-generator/_output/*
+generator/_*
 *__pycache__*

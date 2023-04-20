@@ -30,7 +30,7 @@ FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators}')
 BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
 TEMPLATE_DIR = Path(f'{FILE_DIR}/templates')
-GENERATED_DIR = Path(f'{FILE_DIR}/_output')
+GENERATED_DIR = Path(f'{FILE_DIR}/{args.output}')
 _tmp_tps = ",".join(map(str, args.tps))
 OUTPUT_DIR = Path(
     f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={_tmp_tps}'
