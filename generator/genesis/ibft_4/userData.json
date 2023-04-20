@@ -1,0 +1,21 @@
+{
+  "consensus": "ibft",
+  "chainID": 1337,
+  "blockperiod": 1,
+  "requestTimeout": 10,
+  "emptyBlockPeriod": 60,
+  "epochLength": 30000,
+  "difficulty": 1,
+  "gasLimit": "0xFFFFFF",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "maxCodeSize": 64,
+  "txnSizeLimit": 64,
+  "validators": 4,
+  "members": 0,
+  "bootnodes": 0,
+  "accountPassword": "",
+  "outputPath": "genesis_output/ibft_4",
+  "tesseraEnabled": false,
+  "tesseraPassword": "",
+  "quickstartDevAccounts": false
+}

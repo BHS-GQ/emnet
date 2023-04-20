@@ -1,0 +1,62 @@
+{
+  "nonce": "0x0",
+  "timestamp": "0x58ee40ba",
+  "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000f8acf8a8943991021d265f9963bdc63ec51b30dfc53c82e8b094a142e4fde82b97210d2318354e463408c94134fb940e442527fb6404fe248fe4d265c58a32fa21db6194d8f6615bd83ef280fe4ecd5aa869ea8581b15767943f39df66106a655be1ee81b0681c18200c7b6e5694e6789a37ade67741490be603f24610c6862e9dae940681de20c1c828b1d3cdba5d000625011ff45e97948124661c1da65fe44ba37fc2b6701860cd22a74d80c0",
+  "gasLimit": "0xFFFFFF",
+  "gasUsed": "0x0",
+  "number": "0x0",
+  "difficulty": "0x1",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "config": {
+    "chainId": 1337,
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "isQuorum": true,
+    "maxCodeSizeConfig": [
+      {
+        "block": 0,
+        "size": 64
+      }
+    ],
+    "txnSizeLimit": 64,
+    "ibft": {
+      "policy": 0,
+      "epoch": 30000,
+      "ceil2Nby3Block": 0,
+      "blockperiodseconds": 1
+    }
+  },
+  "alloc": {
+    "0xdab62bf0ca3e98cf9ec280bf217be4285450da44": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x824af7d62d51ab3b8ac9b1765f006aa7d71a5acb": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x7f3e99bd697d68edde8d21c361ed43ef260c34d9": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x504d4076c241fef0847a0f7dd234f7735125a4fe": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x0243aa11e614daec1c4c2251e6652947f2a2a7c3": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x42b70bd340369423c5c72586569eb39eec8e943f": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0xb6a5d3d9e9c799411f60e844d7f910c0914d6cd7": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x90a82243f793219e65884d5c0e2a7a197f4ff927": {
+      "balance": "1000000000000000000000000000"
+    }
+  }
+}

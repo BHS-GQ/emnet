@@ -1,0 +1,50 @@
+{
+  "nonce": "0x0",
+  "timestamp": "0x58ee40ba",
+  "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000f858f85494e2fe0a87dcdf251406f56a472e603e11d162dedf944d4cedd861d8d1a1d9fc2304401894c8c6b189879421f413f676f8b4f6d8240fa48e3bfcb19f8bb78f94975105b837e43d1ecf6b937b84d388571524fd5380c0",
+  "gasLimit": "0xFFFFFF",
+  "gasUsed": "0x0",
+  "number": "0x0",
+  "difficulty": "0x1",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "config": {
+    "chainId": 1337,
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "isQuorum": true,
+    "maxCodeSizeConfig": [
+      {
+        "block": 0,
+        "size": 64
+      }
+    ],
+    "txnSizeLimit": 64,
+    "ibft": {
+      "policy": 0,
+      "epoch": 30000,
+      "ceil2Nby3Block": 0,
+      "blockperiodseconds": 1
+    }
+  },
+  "alloc": {
+    "0x2a070c068b6893c94679c96bab309eab1b824bf1": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x9a8a27248663fc03abb59530fc5fbd71ebad1e67": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0xb2361a89cbd0a64f94b9721d85c363586844daae": {
+      "balance": "1000000000000000000000000000"
+    },
+    "0x264603ae0092595dc552987f8ba25ea2f86232a8": {
+      "balance": "1000000000000000000000000000"
+    }
+  }
+}
