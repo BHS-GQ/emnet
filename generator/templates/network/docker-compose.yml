@@ -1,0 +1,33 @@
+---
+version: '3.6'
+
+x-quorum-def:
+  &quorum-def
+  restart: "on-failure"
+  build:
+    context: config/goquorum
+  expose:
+    - 30303
+    - 8545
+    - 9545
+  healthcheck:
+    test: ["CMD", "wget", "--spider", "--proxy", "off", "http://localhost:8545"]
+    interval: 3s
+    timeout: 3s
+    retries: 10
+    start_period: 5s
+
+services:
+
+networks:
+  quorum-dev-quickstart:
+    name: quorum-dev-quickstart
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+    driver_opts:
+      com.docker.network.bridge.name: qdq_test
+
+

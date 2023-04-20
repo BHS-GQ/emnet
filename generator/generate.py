@@ -5,6 +5,7 @@ import json
 from pprint import pprint
 from pathlib import Path
 from glob import glob
+from distutils.dir_util import copy_tree
 
 
 parser = argparse.ArgumentParser()
@@ -19,6 +20,7 @@ args = parser.parse_args()
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators}')
 BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
+TEMPLATE_DIR = Path(f'{FILE_DIR}/templates')
 GENERATED_DIR = Path(f'{FILE_DIR}/generated')
 OUTPUT_DIR = Path(
     f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={",".join(args.tps)}'
@@ -90,6 +92,13 @@ def build_genesis(args, val_info: dict) -> list:
     return genesis
 
 
+def load_template():
+    network_template = TEMPLATE_DIR / Path("network")
+    copy_tree(
+        str(network_template.resolve()),
+        str(OUTPUT_DIR.resolve())
+    )
+
 def main(args):
     if not os.path.exists(GENERATED_DIR):
         os.makedirs(GENERATED_DIR)
@@ -101,6 +110,7 @@ def main(args):
     val_info = get_val_info(args)
     enodes = build_static_nodes(val_info)
     genesis = build_genesis(args, val_info)
+    load_template()
 
 if __name__ == '__main__':
     main(args)

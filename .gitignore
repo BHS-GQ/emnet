@@ -1,2 +1,4 @@
-.venv/*
-generated/*
+generator/.venv
+generator/.venv/*
+generator/generated
+generator/generated/*
