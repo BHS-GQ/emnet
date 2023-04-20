@@ -1,5 +1,5 @@
 generator/.venv
 generator/.venv/*
-generator/generated
-generator/generated/*
+generator/_output
+generator/_output/*
 *__pycache__*

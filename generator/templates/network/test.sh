@@ -10,7 +10,7 @@ pumba --log-level debug netem --tc-image gaiadocker/iproute2 --duration 1h rate 
 pumba_rate_pid=$!
 
 test_dir=$(pwd)
-cal_cfg_path=$test_dir/config.yaml
+cal_cfg_path=$test_dir/testconfig.yaml
 net_cfg_path=$test_dir/networkconfig.json
 
 sleep 10
