@@ -5,6 +5,7 @@
 # $5 jitter 0
 # $6 rate 100kbit
 
+
 CONSENSUS_ALGOS="hotstuff ibft qbft"
 for n in $2
 do
