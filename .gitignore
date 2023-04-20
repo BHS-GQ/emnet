@@ -3,3 +3,4 @@
 generator/.venv/*
 generator/_*
 *__pycache__*
+*.pem

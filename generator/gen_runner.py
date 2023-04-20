@@ -22,7 +22,7 @@ if __name__ == "__main__":
         test_dir_name = Path(test_dir).name
         line = f'(cd "{test_dir_name}" && ./test.sh {args.delay} {args.jitter} "{args.rate}")\n'
         lines.append(line)
-        line = 'sleep 1\n'
+        line = 'docker system prune -f; sleep 1\n'
         lines.append(line)
     
     runner_file = args.test_dir / 'runner.sh'
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         test_dir = Path(test_dir)
         test_dir_name = test_dir.name
         new_name = f'{test_dir_name}.html'
-        line = f'cp "{test_dir.resolve()}/report.html" "$1/{new_name}"\n'
+        line = f'cp "{test_dir_name}/report.html" "$1/{new_name}"\n'
         lines.append(line)
 
     fetcher_file = args.test_dir / 'report_fetcher.sh'

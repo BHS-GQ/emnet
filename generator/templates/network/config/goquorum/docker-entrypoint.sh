@@ -16,8 +16,6 @@ geth --nousb --verbosity 1 --datadir=/data init ${GENESIS_FILE};
 
 cp /config/keys/accountKeystore /data/keystore/key;
 cp /config/keys/nodekey /data/geth/nodekey;
-cp /config/keys/bls-private-key.json /data;
-cp /config/keys/bls-public-key.json /data;
 
 if [ "ibft" == "$GOQUORUM_CONS_ALGO" ];
 then
@@ -37,6 +35,8 @@ then
 elif [ "hotstuff" == "$GOQUORUM_CONS_ALGO" ];
 then
     echo "Using hotstuff for consensus algorithm..."
+    cp /config/keys/bls-private-key.json /data;
+    cp /config/keys/bls-public-key.json /data;
     export CONSENSUS_ARGS="--mine --miner.threads 1 --miner.gasprice 0"
     export QUORUM_API="hotstuff"
 fi
@@ -54,7 +54,6 @@ fi
 exec geth \
 --datadir /data \
 --nodiscover \
---permissioned \
 --verbosity 100 \
 $CONSENSUS_ARGS \
 --syncmode full --revertreason \
