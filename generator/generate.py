@@ -12,7 +12,6 @@ parser.add_argument('-c', '--consensus-algo', type=str, required=True)
 parser.add_argument('-n', '--n-validators', type=int, required=True)
 parser.add_argument('-o', '--output', type=Path, required=True)
 parser.add_argument('-t', '--tps', nargs='+', required=True)
-parser.add_argument('-r', '--rate', type=str, required=True)
 parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 args = parser.parse_args()
 
@@ -22,7 +21,7 @@ GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators
 BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
 GENERATED_DIR = Path(f'{FILE_DIR}/generated')
 OUTPUT_DIR = Path(
-    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_r={args.rate}_tps={",".join(args.tps)}'
+    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={",".join(args.tps)}'
 )
 
 
