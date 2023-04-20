@@ -20,14 +20,11 @@ x-quorum-def:
 services:
 
 networks:
-  quorum-dev-quickstart:
-    name: quorum-dev-quickstart
+  gq-net:
+    name: gq-net
     driver: bridge
     ipam:
       driver: default
       config:
       - subnet: 172.16.239.0/24
-    driver_opts:
-      com.docker.network.bridge.name: qdq_test
-
 

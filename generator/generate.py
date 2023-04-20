@@ -1,12 +1,20 @@
+import sys
 import os
 import argparse
 import json
 import shutil
+import yaml
 
 from pprint import pprint
 from pathlib import Path
 from glob import glob
 from distutils.dir_util import copy_tree
+from copy import deepcopy
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+from generator.cfg_templates import *
 
 
 parser = argparse.ArgumentParser()
@@ -131,6 +139,57 @@ def load_template(args, genesis: dict, enodes: list):
     with open(gq_data_dir / Path("permissioned-nodes.json"), 'w') as f:
         json.dump(enodes, f, indent=4, sort_keys=True)
 
+def create_dotenv(args):
+    dotenv_path = OUTPUT_DIR / Path(".env")
+    with open(dotenv_path, "w") as f:
+        f.write(f"GOQUORUM_CONS_ALGO={args.consensus_algo}\n")
+        f.write(f"BLOCK_PERIOD=1\n")
+        f.write(f"LOCK_FILE=.quorumDevQuickstart.lock\n")
+        f.write(f"CALIPER_WORKSPACE_PATH=~/caliper-benchmarks\n")
+
+def edit_dockerfile(args):
+    # Edit GQ Dockerfile
+    df_path = OUTPUT_DIR / Path("config/goquorum/Dockerfile")
+    with open(df_path, 'r') as f:
+        df_text = f.readlines()
+
+    if args.consensus_algo == 'hotstuff':
+        df_text[2] = 'FROM --platform=linux/amd64 derick/hsqfinal:0.0.0\n'
+    else:
+        df_text[2] = 'FROM --platform=linux/amd64 quorumengineering/quorum:22.7.4\n'
+
+    with open(df_path, 'w') as f:
+        f.writelines(df_text)
+
+def edit_docker_compose(args, val_info: dict):
+    dc_file = OUTPUT_DIR / Path("docker-compose.yml")
+    with open(dc_file, "r") as f:
+        try:
+            dc = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    dc['services'] = {}
+    dc['networks']['gq-net']['ipam']['config'][0]['subnet'] = f'{args.ip}0/24'
+
+    # Add validators to services
+    for val_idx in range(args.n_validators):
+        validator_name = f"validator{val_idx}"
+        validator_exposed_port = f'210{(val_idx + 1):02d}:8545/tcp'
+        validator_keys_volume = f'./config/nodes/{validator_name}:/config/keys'
+        validator_ip =  val_info[val_idx]['ip']
+
+        val = deepcopy(COMPOSE_VALIDATOR_TEMPLATE)
+        val['networks']['gq-net']['ipv4_address'] = validator_ip
+        val['ports'][0] = validator_exposed_port
+        val['volumes'][0] = validator_keys_volume
+        val['container_name'] = validator_name
+
+        dc['services'][validator_name] = val
+
+    # Update docker-compose.yml
+    with open(dc_file, 'w') as f:
+        yaml.dump(dc, f, default_flow_style=False)
 
 
 def main(args):
@@ -144,7 +203,17 @@ def main(args):
     val_info = get_val_info(args)
     enodes = build_static_nodes(val_info)
     genesis = build_genesis(args, val_info)
+
     load_template(args, genesis, enodes)
+
+    create_dotenv(args)
+
+    edit_dockerfile(args)
+    edit_docker_compose(args, val_info)
+
+    # .env
+    # caliper
+    # run_all_tests.sh
 
 if __name__ == '__main__':
     main(args)
