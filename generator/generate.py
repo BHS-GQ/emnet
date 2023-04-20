@@ -93,7 +93,7 @@ def build_genesis(args, val_info: dict) -> list:
     return genesis
 
 
-def load_template(args):
+def load_template(args, genesis: dict, enodes: list):
     network_template = TEMPLATE_DIR / Path("network")
     copy_tree(
         str(network_template.resolve()),
@@ -102,7 +102,6 @@ def load_template(args):
 
     # Copy validator data
     nodes_dir = OUTPUT_DIR / Path("config/nodes")
-
     for val_dir in glob(f'{GENESIS_DIR}/validator*'):
         val_idx = int(val_dir.split("validator")[-1])
         val_path = Path(val_dir)
@@ -122,6 +121,17 @@ def load_template(args):
             shutil.copy(pri_keypath, new_val_dir)
             shutil.copy(pub_keypath, new_val_dir)
 
+    
+    # Copy static nodes and genesis
+    gq_data_dir = OUTPUT_DIR / Path("config/goquorum/data")
+    with open(gq_data_dir / Path("genesis.json"), 'w') as f:
+        json.dump(genesis, f, indent=4, sort_keys=True)
+    with open(gq_data_dir / Path("static-nodes.json"), 'w') as f:
+        json.dump(enodes, f, indent=4, sort_keys=True)
+    with open(gq_data_dir / Path("permissioned-nodes.json"), 'w') as f:
+        json.dump(enodes, f, indent=4, sort_keys=True)
+
+
 
 def main(args):
     if not os.path.exists(GENERATED_DIR):
@@ -134,7 +144,7 @@ def main(args):
     val_info = get_val_info(args)
     enodes = build_static_nodes(val_info)
     genesis = build_genesis(args, val_info)
-    load_template(args)
+    load_template(args, genesis, enodes)
 
 if __name__ == '__main__':
     main(args)
