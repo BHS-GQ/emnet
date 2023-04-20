@@ -1,4 +1,5 @@
-generator/.venv
+.venv
+.venv/*
 generator/.venv/*
 generator/_output
 generator/_output/*
