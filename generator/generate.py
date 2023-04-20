@@ -12,13 +12,18 @@ parser.add_argument('-c', '--consensus-algo', type=str, required=True)
 parser.add_argument('-n', '--n-validators', type=int, required=True)
 parser.add_argument('-o', '--output', type=Path, required=True)
 parser.add_argument('-t', '--tps', nargs='+', required=True)
-parser.add_argument('-ip', '--ip-base', type=str, default='172.16.239.')
+parser.add_argument('-r', '--rate', type=str, required=True)
+parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 args = parser.parse_args()
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators}')
 BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
+GENERATED_DIR = Path(f'{FILE_DIR}/generated')
+OUTPUT_DIR = Path(
+    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_r={args.rate}_tps={",".join(args.tps)}'
+)
 
 
 def get_val_info(args) -> dict:
@@ -33,7 +38,7 @@ def get_val_info(args) -> dict:
     
     # Generate IP addresses
     for val_idx in range(args.n_validators):
-        val_info[val_idx]['ip'] = args.ip_base + str(val_idx + 5)
+        val_info[val_idx]['ip'] = args.ip + str(val_idx + 5)
 
     return val_info
 
@@ -69,7 +74,8 @@ def build_genesis(args, val_info: dict) -> list:
 
             genesis["mixHash"] = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
             genesis["config"]["isQuorum"] = True
-            genesis["config"]["hotstuff"] = {
+
+            hotstuff_cfg = {
                 "requesttimeoutmilliseconds": 10000,  # Matches ibft, qbft default
                 "blockperiodseconds": 1,
                 "policy": "RoundRobin",
@@ -80,15 +86,22 @@ def build_genesis(args, val_info: dict) -> list:
                     f'0x{v["address"]}' for k, v in val_info.items()
                 ]
             }
+            genesis["config"]["hotstuff"] = hotstuff_cfg
 
     return genesis
 
 
 def main(args):
+    if not os.path.exists(GENERATED_DIR):
+        os.makedirs(GENERATED_DIR)
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+    else:
+        raise Exception(f'OUTPUT_DIR={OUTPUT_DIR} already exists!')
+
     val_info = get_val_info(args)
     enodes = build_static_nodes(val_info)
     genesis = build_genesis(args, val_info)
-    pprint(genesis)
 
 if __name__ == '__main__':
     main(args)
