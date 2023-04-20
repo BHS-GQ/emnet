@@ -1,6 +1,7 @@
 import os
 import argparse
 import json
+import shutil
 
 from pprint import pprint
 from pathlib import Path
@@ -92,12 +93,35 @@ def build_genesis(args, val_info: dict) -> list:
     return genesis
 
 
-def load_template():
+def load_template(args):
     network_template = TEMPLATE_DIR / Path("network")
     copy_tree(
         str(network_template.resolve()),
         str(OUTPUT_DIR.resolve())
     )
+
+    # Copy validator data
+    nodes_dir = OUTPUT_DIR / Path("config/nodes")
+
+    for val_dir in glob(f'{GENESIS_DIR}/validator*'):
+        val_idx = int(val_dir.split("validator")[-1])
+        val_path = Path(val_dir)
+
+        new_val_dir = nodes_dir / Path(f'validator{val_idx}')
+        os.makedirs(new_val_dir)
+        copy_tree(
+            str(val_path.resolve()),
+            str(new_val_dir.resolve())
+        )
+
+        if args.consensus_algo == "hotstuff":
+            # Copy BLS Keys
+            pri_keypath = BLS_KEY_DIR / f"bls-private-key{val_idx}.json"
+            pub_keypath = BLS_KEY_DIR / f"bls-public-key.json"
+
+            shutil.copy(pri_keypath, new_val_dir)
+            shutil.copy(pub_keypath, new_val_dir)
+
 
 def main(args):
     if not os.path.exists(GENERATED_DIR):
@@ -110,7 +134,7 @@ def main(args):
     val_info = get_val_info(args)
     enodes = build_static_nodes(val_info)
     genesis = build_genesis(args, val_info)
-    load_template()
+    load_template(args)
 
 if __name__ == '__main__':
     main(args)
