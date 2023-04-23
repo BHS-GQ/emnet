@@ -14,8 +14,9 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # runner.sh test runner
-    lines = []
-    for test_dir in glob(f'{args.test_dir}/*'):
+    lines = ['docker system prune -f; sleep 1\n']
+    valglob = sorted(glob(f'{args.test_dir}/*'))
+    for test_dir in valglob:
         if not os.path.isdir(test_dir):
             continue
 
@@ -32,9 +33,10 @@ if __name__ == "__main__":
     st = os.stat(runner_file)
     os.chmod(runner_file, st.st_mode | stat.S_IEXEC)
 
-    # fetcher.sh report.html fetcher
-    lines = []
-    for test_dir in glob(f'{args.test_dir}/*'):
+    # report_fetcher.sh report.html fetcher
+    lines = ['mkdir $1\n']
+    valglob = sorted(glob(f'{args.test_dir}/*'))
+    for test_dir in valglob:
         if not os.path.isdir(test_dir):
             continue
 
@@ -45,6 +47,31 @@ if __name__ == "__main__":
         lines.append(line)
 
     fetcher_file = args.test_dir / 'report_fetcher.sh'
+    with open(fetcher_file, 'w') as f:
+        f.writelines(lines)
+
+    st = os.stat(fetcher_file)
+    os.chmod(fetcher_file, st.st_mode | stat.S_IEXEC)
+
+    # logs_fetcher.sh
+    lines = ['mkdir -p $1\nmkdir $1/logs\n']
+    valglob = sorted(glob(f'{args.test_dir}/*'))
+    for test_dir in valglob:
+        if not os.path.isdir(test_dir):
+            continue
+
+        test_dir = Path(test_dir)
+        test_dir_name = test_dir.name
+        new_name = f'{test_dir_name}'
+        line = f'mkdir "$1/logs/{new_name}/"\n'
+        lines.append(line)
+        line = f'cp -r "{test_dir_name}/logs/quorum/*" "$1/logs/{new_name}/"\n'
+        lines.append(line)
+    lines.append(
+        '(cd $1 && tar -czvf logs.tar.gz $1/logs && rm -rf $1/logs)'
+    )
+
+    fetcher_file = args.test_dir / 'logs_fetcher.sh'
     with open(fetcher_file, 'w') as f:
         f.writelines(lines)
 

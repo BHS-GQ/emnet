@@ -227,7 +227,7 @@ def edit_testconfig(args):
 
     testcfg['test']['workers']['number'] = 4
     
-    tx_duration = 10
+    tx_duration = 20
     # Clear rounds
     testcfg['test']['rounds'] = []
 
@@ -236,7 +236,7 @@ def edit_testconfig(args):
         round['label'] = 'open'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = 5000
+        tx_number = tps * tx_duration
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/open.js'
@@ -248,7 +248,7 @@ def edit_testconfig(args):
         round['label'] = 'query'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = 5000
+        tx_number = tps * tx_duration
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/query.js'
@@ -260,7 +260,7 @@ def edit_testconfig(args):
         round['label'] = 'transfer'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = 5000
+        tx_number = tps * tx_duration
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/transfer.js'
