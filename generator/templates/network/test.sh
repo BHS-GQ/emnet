@@ -13,7 +13,7 @@ test_dir=$(pwd)
 cal_cfg_path=$test_dir/testconfig.yaml
 net_cfg_path=$test_dir/networkconfig.json
 
-sleep 10
+sleep 20
 
 (cd $CALIPER_WORKSPACE_PATH && npx caliper launch manager --caliper-workspace $CALIPER_WORKSPACE_PATH --caliper-benchconfig $cal_cfg_path --caliper-networkconfig $net_cfg_path) 
 
@@ -23,6 +23,6 @@ mv $report_path .
 kill $pumba_delay_pid
 kill $pumba_rate_pid
 
-sleep 10
+sleep 5
 
 ./remove.sh

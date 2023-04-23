@@ -4,6 +4,7 @@ import argparse
 import json
 import shutil
 import yaml
+import nginx
 
 from pprint import pprint
 from pathlib import Path
@@ -49,7 +50,7 @@ def get_val_info(args) -> dict:
     
     # Generate IP addresses
     for val_idx in range(args.n_validators):
-        val_info[val_idx]['ip'] = args.ip + str(val_idx + 5)
+        val_info[val_idx]['ip'] = args.ip + str(val_idx + 6)
 
     return val_info
 
@@ -74,9 +75,17 @@ def build_genesis(args, val_info: dict) -> list:
         genesis = json.load(f)
 
         # Inject caliper contract deployer
-        genesis["alloc"]["0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"] = {
-            "balance": "1000000000000000000000000000"
+        genesis["alloc"]["0x8fd250a1957c953efccf7c699ff5fd07ff0141f8"] = {
+            "balance": "9999999999999999999999999999"
         }
+
+        genesis["config"]["txnSizeLimit"] = 128
+        genesis["config"]["maxCodeSizeConfig"] = [
+            {
+                "block": 0,
+                "size": 128
+            }
+        ]
 
         if args.consensus_algo == "hotstuff":
             # Hotstuff uses QBFT genesis
@@ -173,6 +182,15 @@ def edit_docker_compose(args, val_info: dict):
     dc['services'] = {}
     dc['networks']['gq-net']['ipam']['config'][0]['subnet'] = f'{args.ip}0/24'
 
+    # Add nginx to services
+    nginx_svc = deepcopy(NGINX_TEMPLATE)
+    _ip = args.ip + '5'
+    nginx_svc['networks']['gq-net']['ipv4_address'] = _ip
+    for val_idx in range(0, 4):
+        validator_name = f"validator{val_idx}"
+        nginx_svc['depends_on'][validator_name] = {"condition": "service_healthy"}
+    dc['services']['nginx'] = nginx_svc
+
     # Add validators to services
     for val_idx in range(args.n_validators):
         validator_name = f"validator{val_idx}"
@@ -207,6 +225,8 @@ def edit_testconfig(args):
         except yaml.YAMLError as exc:
             print(exc)
 
+    testcfg['test']['workers']['number'] = 4
+    
     tx_duration = 10
     # Clear rounds
     testcfg['test']['rounds'] = []
@@ -216,7 +236,7 @@ def edit_testconfig(args):
         round['label'] = 'open'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = tps * tx_duration
+        tx_number = 5000
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/open.js'
@@ -228,7 +248,7 @@ def edit_testconfig(args):
         round['label'] = 'query'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = tps * tx_duration
+        tx_number = 5000
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/query.js'
@@ -240,7 +260,7 @@ def edit_testconfig(args):
         round['label'] = 'transfer'
         round['rateControl']['opts']['tps'] = tps
 
-        tx_number = tps * tx_duration
+        tx_number = 5000
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
         round['workload']['module'] = 'benchmarks/scenario/simple/transfer.js'
@@ -255,12 +275,54 @@ def edit_networkconfig(val_info):
     with open(net_cfg_path, 'r', encoding='utf-8') as f:
         net_cfg = json.load(f)
 
-        net_cfg["ethereum"]["contractDeployerAddress"] = val_info[0]["accountAddress"]
-        net_cfg["ethereum"]["fromAddress"] = val_info[0]["accountAddress"]
+    # Nothing happens yet
 
     with open(net_cfg_path, 'w', encoding='utf-8') as f:
         json.dump(net_cfg, f, indent=4, sort_keys=True)
 
+def create_loadbalancer(val_info):
+    c = nginx.Conf()
+
+    events = nginx.Events()
+    c.add(events)
+
+    root = nginx.Http()
+
+    _map = nginx.Map('$http_upgrade $connection_upgrade')
+    _map.add(
+        nginx.Key('default', 'upgrade'),
+        nginx.Key("''", 'close')
+    )
+    root.add(_map)
+
+    upstream = nginx.Upstream('websocket')
+    for idx in range(0, 4):
+        ip = val_info[idx]['ip']
+        
+        upstream.add(
+            nginx.Key('server', f'{ip}:8546')
+        )
+    root.add(upstream)
+
+    server = nginx.Server()
+    server.add(nginx.Key('listen', 8000))
+    server.add(
+        nginx.Location(
+            '/',
+            nginx.Key('proxy_pass', 'http://websocket'),
+            nginx.Key('proxy_http_version', '1.1'),
+            nginx.Key('proxy_set_header', 'Upgrade $http_upgrade'),
+            nginx.Key('proxy_set_header', 'Connection $connection_upgrade'),
+            nginx.Key('proxy_set_header', 'Host $host'),
+        )
+    )
+    root.add(server)
+    c.add(root)
+
+    nginx_dir = OUTPUT_DIR / 'nginx'
+    os.makedirs(nginx_dir)
+    conf_file = nginx_dir / 'nginx.conf'
+    nginx.dumpf(c, conf_file)
 
 def main(args):
     if not os.path.exists(GENERATED_DIR):
@@ -278,6 +340,9 @@ def main(args):
 
     create_dotenv(args)
 
+    # Nginx LB
+    create_loadbalancer(val_info)
+
     # Docker
     edit_dockerfile(args)
     edit_docker_compose(args, val_info)
@@ -288,7 +353,6 @@ def main(args):
     edit_testconfig(args)
     edit_networkconfig(val_info)
 
-    # test.sh
 
 if __name__ == '__main__':
     main(args)

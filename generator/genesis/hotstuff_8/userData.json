@@ -6,7 +6,7 @@
   "emptyBlockPeriod": 60,
   "epochLength": 30000,
   "difficulty": 1,
-  "gasLimit": "0xFFFFFF",
+  "gasLimit": "0x1fffffffffffff",
   "coinbase": "0x0000000000000000000000000000000000000000",
   "maxCodeSize": 64,
   "txnSizeLimit": 64,

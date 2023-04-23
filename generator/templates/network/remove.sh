@@ -27,8 +27,9 @@ echo "Quorum Dev Quickstart "
 echo "*************************************${normal}"
 echo "Stop and remove network..."
 
-docker-compose down -v --rmi all
+docker-compose down -v
 docker-compose rm -sfv
+docker rmi $(docker images | grep validator | tr -s ' ' | cut -d ' ' -f 3) -f
 
 if [ -f "docker-compose-deps.yml" ]; then
     echo "Stopping dependencies..."

@@ -2,7 +2,7 @@
   "nonce": "0x0",
   "timestamp": "0x58ee40ba",
   "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000f858f8549435e2b20a99fbfaf57df21ffed2829d13048b733794879c1b8180638687473c571a01228b4858a58ad494d9a0d1d00b2e79141a718994151bfc01c5dcfdfc94a8c3ee78af93570a70056975a40f70dba98b06fc80c0",
-  "gasLimit": "0xFFFFFF",
+  "gasLimit": "0x1fffffffffffff",
   "gasUsed": "0x0",
   "number": "0x0",
   "difficulty": "0x1",
@@ -18,6 +18,7 @@
     "eip158Block": 0,
     "byzantiumBlock": 0,
     "constantinopleBlock": 0,
+    "constantinopleFixBlock": 0,
     "isQuorum": true,
     "maxCodeSizeConfig": [
       {
@@ -35,16 +36,16 @@
   },
   "alloc": {
     "0xff2254b2574c04a322c1e3ee8f720ef1835cb87d": {
-      "balance": "1000000000000000000000000000"
+      "balance": "9999999999999999999999999999"
     },
     "0x32a54d394a778cd071e50a4eec432bf0e29eaf0c": {
-      "balance": "1000000000000000000000000000"
+      "balance": "9999999999999999999999999999"
     },
     "0x4d84305e375cb01975a8fa6260429be399e60bcf": {
-      "balance": "1000000000000000000000000000"
+      "balance": "9999999999999999999999999999"
     },
     "0x94781e79ae4f1f46922c04efcee2880ecfe15fe3": {
-      "balance": "1000000000000000000000000000"
+      "balance": "9999999999999999999999999999"
     }
   }
 }

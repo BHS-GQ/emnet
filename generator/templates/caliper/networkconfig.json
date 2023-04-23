@@ -1,27 +1,28 @@
 {
     "caliper": {
         "blockchain": "ethereum",
-        "command" : {
-            "start": "",
-            "end": ""
+        "command": {
+            "end": "",
+            "start": ""
         }
     },
     "ethereum": {
-        "url": "ws://172.16.239.5:8546",
-        "contractDeployerAddress": "",
+        "contractDeployerAddress": "0x8fd250a1957c953efccf7c699ff5fd07ff0141f8",
+        "contractDeployerAddressPrivateKey": "0x52587e4e9655f0b31dbea59360667289a0df0b40aaa581112b4df247ba5a3e22",
         "contractDeployerAddressPassword": "",
-        "fromAddress": "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
-        "transactionConfirmationBlocks": 1,
         "contracts": {
             "simple": {
-                "path": "./src/ethereum/simple/simple.json",
                 "estimateGas": false,
                 "gas": {
                     "open": 45000,
                     "query": 45000,
                     "transfer": 45000
-                }
+                },
+                "path": "./src/ethereum/simple/simple.json"
             }
-        }
+        },
+        "fromAddressSeed": "0x3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
+        "transactionConfirmationBlocks": 1,
+        "url": "ws://172.16.239.5:8000"
     }
 }
