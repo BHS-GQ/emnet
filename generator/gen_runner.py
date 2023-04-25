@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # runner.sh test runner
-    lines = ['docker system prune -f; sleep 1\n']
+    lines = ['docker system prune -f; sleep 10\n']
     valglob = sorted(glob(f'{args.test_dir}/*'))
     for test_dir in valglob:
         if not os.path.isdir(test_dir):
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         test_dir_name = Path(test_dir).name
         line = f'(cd "{test_dir_name}" && ./test.sh {args.delay} {args.jitter} "{args.rate}")\n'
         lines.append(line)
-        line = 'docker system prune -f; sleep 1\n'
+        line = 'docker system prune -f; sleep 10\n'
         lines.append(line)
     
     runner_file = args.test_dir / 'runner.sh'

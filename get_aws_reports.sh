@@ -13,4 +13,4 @@ mkdir data/$3
 scp -i $AWS_PEM_FILE -r ubuntu@$AWS_IP:$2/* data/$3
 scp -i $AWS_PEM_FILE ubuntu@$AWS_IP:$1/*.log data/$3
 ssh -i $AWS_PEM_FILE ubuntu@$AWS_IP "rm -r $2"
-(cd data/$3 && mkdir -p logs && tar -xzvf logs.tar.gz -C logs)
+(cd data/$3 && mkdir -p logs && tar -xzvf logs.tar.gz -C logs && rm logs.tar.gz)

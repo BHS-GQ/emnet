@@ -31,7 +31,8 @@
       "policy": 0,
       "epoch": 30000,
       "ceil2Nby3Block": 0,
-      "blockperiodseconds": 1
+      "blockperiodseconds": 1,
+      "requesttimeoutseconds": 10
     }
   },
   "alloc": {

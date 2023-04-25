@@ -1,6 +1,7 @@
 import glob
 import os
 import argparse
+import shutil
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -12,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--input-dir', type=Path, required=True)
 parser.add_argument('-x', '--x-lim', type=int, required=True)
 parser.add_argument('-y', '--y-lim', type=int, required=True)
+parser.add_argument('-s', '--show', action='store_true')
 args = parser.parse_args()
 
 
@@ -21,9 +23,9 @@ INPUT_DIR = Path(f'{FILE_DIR}/{args.input_dir}')
 OUTPUT_DIR = INPUT_DIR / 'cleaned'
 
 if os.path.exists(OUTPUT_DIR):
-    os.removedirs(OUTPUT_DIR)
-else:
-    os.makedirs(OUTPUT_DIR)
+    shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
+
+os.makedirs(OUTPUT_DIR)
 
 
 def get_headers(path):
@@ -73,6 +75,7 @@ def main(args):
     df_raw = pd.DataFrame(rows, columns=headers)
     df_raw['Send Rate (TPS)']=df_raw['Send Rate (TPS)'].astype(float)
     df_raw['Throughput (TPS)']=df_raw['Throughput (TPS)'].astype(float)
+    df_raw['Avg Latency (s)']=df_raw['Avg Latency (s)'].astype(float)
     df_raw['n']=df_raw['n'].astype(int)
 
     PLOT_DESIGNS = {
@@ -105,17 +108,41 @@ def main(args):
                 linewidth=1,
                 label=f"{key[0]}_{key[1]}"
             )
-        ax.set_title(f'Send Rate vs. Throughput of {transaction_type}')
+        ax.set_title(f'Send Rate (TPS) vs. Throughput (ms) of {transaction_type}')
         ax.set_xlabel('Send Rate (TPS)')
         ax.set_ylabel('Throughput (TPS)')
 
         ax.legend()
-        img_path = OUTPUT_DIR / f'{transaction_type}.png'
+        img_path = OUTPUT_DIR / f'throughput_{transaction_type}.png'
         plt.savefig(img_path)
-        plt.show()
+        if args.show:
+            plt.show()
+    for transaction_type in transaction_types:
+        df = df_raw.copy()
+        df = df.loc[df['Name'] == transaction_type]
+        fig, ax = plt.subplots(figsize=(10,8))
+        for key, grp in df.groupby(['consensus', 'n']):
+            ax.plot(
+                grp['Send Rate (TPS)'],
+                grp['Avg Latency (s)'],
+                color=PLOT_DESIGNS['consensus'][key[0]]['color'],
+                marker=PLOT_DESIGNS['n'][key[1]]['marker'],
+                linestyle=PLOT_DESIGNS['n'][key[1]]['ls'],
+                linewidth=1,
+                label=f"{key[0]}_{key[1]}"
+            )
+        ax.set_title(f'Send Rate (TPS) vs. Latency (TPS) of {transaction_type}')
+        ax.set_xlabel('Send Rate (TPS)')
+        ax.set_ylabel('Avg Latency (s)')
 
-        csv_path = OUTPUT_DIR / 'compiled.csv'
-        df_raw.to_csv(csv_path)
+        ax.legend()
+        img_path = OUTPUT_DIR / f'latency_{transaction_type}.png'
+        plt.savefig(img_path)
+        if args.show:
+            plt.show()
+
+    csv_path = OUTPUT_DIR / 'compiled.csv'
+    df_raw.to_csv(csv_path)
 
 if __name__ == "__main__":
     main(args)

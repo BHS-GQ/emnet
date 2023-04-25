@@ -24,6 +24,7 @@ parser.add_argument('-n', '--n-validators', type=int, required=True)
 parser.add_argument('-o', '--output', type=Path, required=True)
 parser.add_argument('-t', '--tps', nargs='+', type=int, required=True)
 parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
+parser.add_argument('--disable-query', action='store_true')
 args = parser.parse_args()
 
 
@@ -243,17 +244,18 @@ def edit_testconfig(args):
 
         testcfg['test']['rounds'].append(round)
 
-    for tps in args.tps:
-        round = deepcopy(ROUND_TEMPLATE)
-        round['label'] = 'query'
-        round['rateControl']['opts']['tps'] = tps
+    if not args.disable_query:
+        for tps in args.tps:
+            round = deepcopy(ROUND_TEMPLATE)
+            round['label'] = 'query'
+            round['rateControl']['opts']['tps'] = tps
 
-        tx_number = tps * tx_duration
-        round['txNumber'] = tx_number
-        round['workload']['arguments']['numberOfAccounts'] = tx_number
-        round['workload']['module'] = 'benchmarks/scenario/simple/query.js'
+            tx_number = tps * tx_duration
+            round['txNumber'] = tx_number
+            round['workload']['arguments']['numberOfAccounts'] = tx_number
+            round['workload']['module'] = 'benchmarks/scenario/simple/query.js'
 
-        testcfg['test']['rounds'].append(round)
+            testcfg['test']['rounds'].append(round)
 
     for tps in args.tps:
         round = deepcopy(ROUND_TEMPLATE)
