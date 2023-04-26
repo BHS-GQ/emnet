@@ -88,6 +88,7 @@ def build_genesis(args, val_info: dict) -> list:
             }
         ]
 
+        block_period = 1
         if args.consensus_algo == "hotstuff":
             # Hotstuff uses QBFT genesis
             if "qbft" in genesis["config"]:
@@ -98,7 +99,7 @@ def build_genesis(args, val_info: dict) -> list:
 
             hotstuff_cfg = {
                 "requesttimeoutmilliseconds": 10000,  # Matches ibft, qbft default
-                "blockperiodseconds": 1,
+                "blockperiodseconds": block_period,
                 "policy": "RoundRobin",
                 "faultymode": "Disabled",
 
@@ -108,6 +109,10 @@ def build_genesis(args, val_info: dict) -> list:
                 ]
             }
             genesis["config"]["hotstuff"] = hotstuff_cfg
+        elif args.consensus_algo == "ibft":
+            genesis["config"]["ibft"]["blockperiodseconds"] = block_period
+        elif args.consensus_algo == "qbft":
+            genesis["config"]["qbft"]["blockperiodseconds"] = block_period
 
     return genesis
 
@@ -165,7 +170,7 @@ def edit_dockerfile(args):
         df_text = f.readlines()
 
     if args.consensus_algo == 'hotstuff':
-        df_text[2] = 'FROM --platform=linux/amd64 derick/hsqfinal:0.0.0\n'
+        df_text[2] = 'FROM --platform=linux/amd64 derick/hs:0.0.0\n'
     else:
         df_text[2] = 'FROM --platform=linux/amd64 quorumengineering/quorum:22.7.4\n'
 
@@ -228,7 +233,7 @@ def edit_testconfig(args):
 
     testcfg['test']['workers']['number'] = 4
     
-    tx_duration = 20
+    tx_duration = 10
     # Clear rounds
     testcfg['test']['rounds'] = []
 

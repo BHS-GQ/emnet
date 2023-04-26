@@ -39,7 +39,7 @@ for n in $all_n
 do
     for algo in $CONSENSUS_ALGOS
     do
-        python3 -m generator.gen_network -c $algo -o $output_dir -t $all_tps -n $n --ip 172.16.239.
+        python3 -m generator.gen_network -c $algo -o $output_dir -t $all_tps -n $n --ip 172.16.239. --disable-query
     done
 done
 

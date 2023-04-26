@@ -15,8 +15,8 @@
                 "estimateGas": false,
                 "gas": {
                     "open": 45000,
-                    "query": 45000,
-                    "transfer": 45000
+                    "query": 100000,
+                    "transfer": 70000
                 },
                 "path": "./src/ethereum/simple/simple.json"
             }

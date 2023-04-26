@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # runner.sh test runner
-    lines = ['docker system prune -f; sleep 10\n']
+    lines = ['docker system prune -f; sleep 2\n']
     valglob = sorted(glob(f'{args.test_dir}/*'))
     for test_dir in valglob:
         if not os.path.isdir(test_dir):
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         new_name = f'{test_dir_name}'
         line = f'mkdir "$1/logs/{new_name}/"\n'
         lines.append(line)
-        line = f'cp -r "{test_dir_name}/logs/quorum/*" "$1/logs/{new_name}/"\n'
+        line = f'cp {test_dir_name}/logs/quorum/*.log $1/logs/{new_name}/\n'
         lines.append(line)
     lines.append(
         '(cd $1 && tar -czvf logs.tar.gz $1/logs && rm -rf $1/logs)'
