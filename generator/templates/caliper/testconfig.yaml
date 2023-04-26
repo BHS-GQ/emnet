@@ -45,3 +45,10 @@ test:
         arguments:
           << : *simple-args
           money: 100
+monitors:
+  resource:
+  - module: docker
+    options:
+      interval: 1
+      containers:
+      - all
