@@ -6,3 +6,4 @@ generator/_*
 *.pem
 _*
 .env
+*.tar.gz
