@@ -222,21 +222,21 @@ def edit_docker_compose(args, val_info: dict):
 
         dc['services'][validator_name] = val
 
-    # Add pumba to services
-    depends_on = {}
-    for val_idx in range(args.n_validators):
-        validator_name = f"validator{val_idx}"
-        depends_on[validator_name] = {"condition": "service_healthy"}
-    if args.delay != '0' or args.jitter != '0':
-        pumba_delay = deepcopy(PUMBA_DELAY_TEMPLATE)
-        pumba_delay['command'] = pumba_delay['command'].format(time=args.delay, jitter=args.jitter)
-        pumba_delay['depends_on'] = depends_on
-        dc['services']['pumba_delay'] = pumba_delay
-    if args.rate:
-        pumba_rate = deepcopy(PUMBA_RATE_TEMPLATE)
-        pumba_rate['command'] = pumba_rate['command'].format(rate=args.rate)
-        pumba_rate['depends_on'] = depends_on
-        dc['services']['pumba_rate'] = pumba_rate
+    # # Add pumba to services
+    # depends_on = {}
+    # for val_idx in range(args.n_validators):
+    #     validator_name = f"validator{val_idx}"
+    #     depends_on[validator_name] = {"condition": "service_healthy"}
+    # if args.delay != '0' or args.jitter != '0':
+    #     pumba_delay = deepcopy(PUMBA_DELAY_TEMPLATE)
+    #     pumba_delay['command'] = pumba_delay['command'].format(time=args.delay, jitter=args.jitter)
+    #     pumba_delay['depends_on'] = depends_on
+    #     dc['services']['pumba_delay'] = pumba_delay
+    # if args.rate:
+    #     pumba_rate = deepcopy(PUMBA_RATE_TEMPLATE)
+    #     pumba_rate['command'] = pumba_rate['command'].format(rate=args.rate)
+    #     pumba_rate['depends_on'] = depends_on
+    #     dc['services']['pumba_rate'] = pumba_rate
 
     # Update docker-compose.yml
     with open(dc_file, 'w') as f:

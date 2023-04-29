@@ -45,6 +45,33 @@ def main():
     run_path = PWD / 'run.sh'
     subprocess.run([str(run_path.resolve())])
 
+    time.sleep(5)
+    # Run pumba netem
+    pumba_delay, pumba_rate = None, None
+    if CONFIG['PUMBA_DELAY'] != '0' or CONFIG['PUMBA_JITTER'] != '0':
+        pumba_delay = subprocess.Popen([
+            'pumba', '--log-level', 'debug',
+            'netem',
+            '--tc-image', 'gaiadocker/iproute2',
+            '--duration', '1h',
+            'delay',
+            '--time', CONFIG['PUMBA_DELAY'],
+            '--jitter', CONFIG['PUMBA_JITTER'],
+            're2:validator.'
+        ])
+        procs.append(pumba_delay)
+
+    if 'PUMBA_RATE' in CONFIG:
+        pumba_rate = subprocess.Popen([
+            'pumba', '--log-level', 'debug', 
+            'netem',
+            '--tc-image', 'gaiadocker/iproute2',
+            '--duration', '1h',
+            'rate',
+            '-r', CONFIG['PUMBA_RATE'],
+            're2:validator.'
+        ])
+        procs.append(pumba_rate)
     time.sleep(30)
 
     # Run Caliper
@@ -56,6 +83,14 @@ def main():
         '--caliper-networkconfig', str(CALIPER_NET_CFG)
     ],
     cwd=full_caliper_ws_path)
+
+    # Shutdown everything
+    if pumba_delay is not None:
+        pumba_delay.terminate()
+        pumba_delay.wait()
+    if pumba_rate is not None:
+        pumba_rate.terminate()
+        pumba_delay.wait()
 
     remove_path = PWD / 'remove.sh'
     subprocess.run([str(remove_path.resolve())])
