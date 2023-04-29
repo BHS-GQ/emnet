@@ -8,7 +8,7 @@
 -c cpu "2.00"
 '
 
-while getopts ":t:n:o:d:j:r:" opt; do
+while getopts ":t:n:o:d:j:r:c:" opt; do
   case $opt in
     t) all_tps="$OPTARG"
     ;;
@@ -37,7 +37,7 @@ while getopts ":t:n:o:d:j:r:" opt; do
 done
 
 
-CONSENSUS_ALGOS="hotstuff ibft qbft"
+CONSENSUS_ALGOS="hotstuff ibft"
 for n in $all_n
 do
     for algo in $CONSENSUS_ALGOS
@@ -59,5 +59,6 @@ do
     done
 done
 
-target_dir="generator/"$output_dir
-python3 -m generator.gen_runner -t $target_dir
+full_output_dir='./generator/'$output_dir
+cp './generator/templates/batch_testing/fetch_results.py' $full_output_dir
+cp './generator/templates/batch_testing/runner.py' $full_output_dir
