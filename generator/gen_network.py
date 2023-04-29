@@ -173,8 +173,8 @@ def create_dotenv(args):
         f.write(f"PUMBA_DELAY={args.delay}\n")
         f.write(f"PUMBA_JITTER={args.jitter}\n")
         f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
-        f.write(f"NET_IP=\"{args.netip}\"\n")
-        f.write(f"NET_PEM_FILE=\"{args.netpem}\"\n")
+        f.write(f"NET_IP={args.netip}\n")
+        f.write(f"NET_PEM_FILE={args.netpem}\n")
 
 def edit_dockerfile(args):
     # Edit GQ Dockerfile
