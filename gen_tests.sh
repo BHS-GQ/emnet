@@ -37,7 +37,7 @@ while getopts ":t:n:o:d:j:r:c:" opt; do
 done
 
 
-CONSENSUS_ALGOS="hotstuff ibft"
+CONSENSUS_ALGOS="hotstuff ibft qbft"
 for n in $all_n
 do
     for algo in $CONSENSUS_ALGOS
