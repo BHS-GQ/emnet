@@ -7,7 +7,7 @@
 -r rate "10mbit"
 -c cpu "2.00"
 '
-
+echo $NET_IP
 while getopts ":t:n:o:d:j:r:c:" opt; do
   case $opt in
     t) all_tps="$OPTARG"
@@ -55,8 +55,8 @@ do
           --ip 172.16.239. \
           --disable-query \
           --cpu $cpu \
-          --netip $NET_IP \      # | added as a way to pass .env variables into gen_network.py
-          --netpem $NET_PEM_FILE # | assumes these exist in .env
+          --netip $NET_IP \
+          --netpem $NET_PEM_FILE # added as a way to pass .env variables into gen_network.py | assumes these exist in .env
       done
     done
 done

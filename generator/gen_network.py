@@ -174,7 +174,7 @@ def create_dotenv(args):
         f.write(f"PUMBA_JITTER={args.jitter}\n")
         f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
         f.write(f"NET_IP=\"{args.netip}\"\n")
-        f.write(f"NET_PEM_FILE=\"{args.pem}\"\n")
+        f.write(f"NET_PEM_FILE=\"{args.netpem}\"\n")
 
 def edit_dockerfile(args):
     # Edit GQ Dockerfile
@@ -291,7 +291,8 @@ def edit_networkconfig(val_info):
     with open(net_cfg_path, 'r', encoding='utf-8') as f:
         net_cfg = json.load(f)
 
-    # Nothing happens yet
+    # set url to net machine local ip
+    net_cfg['ethereum']['url'] = f"ws://{args.netip}:8080"
 
     with open(net_cfg_path, 'w', encoding='utf-8') as f:
         json.dump(net_cfg, f, indent=4, sort_keys=True)
