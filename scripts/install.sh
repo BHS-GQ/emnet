@@ -32,3 +32,6 @@ git clone https://github.com/hyperledger/caliper-benchmarks
 wget https://github.com/alexei-led/pumba/releases/download/0.9.7/pumba_linux_amd64
 chmod +x pumba_linux_amd64
 sudo mv pumba_linux_amd64 /bin/pumba
+
+# Install python
+sudo apt install python3-pip

@@ -52,8 +52,8 @@ def main():
     subprocess.run([
         'npx', 'caliper', 'launch', 'manager',
         '--caliper-workspace', full_caliper_ws_path,
-        '--caliper-benchCONFIG', str(CALIPER_TEST_CFG),
-        '--caliper-networkCONFIG', str(CALIPER_NET_CFG)
+        '--caliper-benchconfig', str(CALIPER_TEST_CFG),
+        '--caliper-networkconfig', str(CALIPER_NET_CFG)
     ],
     cwd=full_caliper_ws_path)
 
