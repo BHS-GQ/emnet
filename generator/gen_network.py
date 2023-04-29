@@ -6,7 +6,6 @@ import shutil
 import yaml
 import nginx
 
-from pprint import pprint
 from pathlib import Path
 from glob import glob
 from distutils.dir_util import copy_tree
@@ -22,7 +21,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--consensus-algo', type=str, required=True)
 parser.add_argument('-n', '--n-validators', type=int, required=True)
 parser.add_argument('-o', '--output', type=Path, required=True)
-parser.add_argument('-t', '--tps', nargs='+', type=int, required=True)
+parser.add_argument('-d', '--delay', type=str, required=True)
+parser.add_argument('-j', '--jitter', type=str, required=True)
+parser.add_argument('-r', '--rate', type=str)
+parser.add_argument('-t', '--tps', type=int, required=True)
+parser.add_argument('--cpu', type=str, default='3.00', required=True)
 parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 parser.add_argument('--disable-query', action='store_true')
 args = parser.parse_args()
@@ -33,9 +36,8 @@ GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators
 BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
 TEMPLATE_DIR = Path(f'{FILE_DIR}/templates')
 GENERATED_DIR = Path(f'{FILE_DIR}/{args.output}')
-_tmp_tps = ",".join(map(str, args.tps))
 OUTPUT_DIR = Path(
-    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={_tmp_tps}'
+    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={args.tps}'
 )
 
 
@@ -162,6 +164,13 @@ def create_dotenv(args):
         f.write(f"BLOCK_PERIOD=1\n")
         f.write(f"LOCK_FILE=.quorumDevQuickstart.lock\n")
         f.write(f"CALIPER_WORKSPACE_PATH=~/caliper-benchmarks\n")
+        f.write(f"CONSENSUS_ALGO={args.consensus_algo}\n")
+        f.write(f"N_VALIDATORS={args.n_validators}\n")
+        f.write(f"TPS={args.tps}\n")
+        f.write(f"CPU_LIMIT={args.cpu}\n")
+        f.write(f"PUMBA_DELAY={args.delay}\n")
+        f.write(f"PUMBA_JITTER={args.jitter}\n")
+        f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
 
 def edit_dockerfile(args):
     # Edit GQ Dockerfile
@@ -209,8 +218,25 @@ def edit_docker_compose(args, val_info: dict):
         val['ports'][0] = validator_exposed_port
         val['volumes'][0] = validator_keys_volume
         val['container_name'] = validator_name
+        val['deploy']['resources']['limits']['cpus'] = args.cpu
 
         dc['services'][validator_name] = val
+
+    # Add pumba to services
+    depends_on = {}
+    for val_idx in range(args.n_validators):
+        validator_name = f"validator{val_idx}"
+        depends_on[validator_name] = {"condition": "service_healthy"}
+    if args.delay != '0' or args.jitter != '0':
+        pumba_delay = deepcopy(PUMBA_DELAY_TEMPLATE)
+        pumba_delay['command'] = pumba_delay['command'].format(time=args.delay, jitter=args.jitter)
+        pumba_delay['depends_on'] = depends_on
+        dc['services']['pumba_delay'] = pumba_delay
+    if args.rate:
+        pumba_rate = deepcopy(PUMBA_RATE_TEMPLATE)
+        pumba_rate['command'] = pumba_rate['command'].format(rate=args.rate)
+        pumba_rate['depends_on'] = depends_on
+        dc['services']['pumba_rate'] = pumba_rate
 
     # Update docker-compose.yml
     with open(dc_file, 'w') as f:
@@ -233,44 +259,23 @@ def edit_testconfig(args):
 
     testcfg['test']['workers']['number'] = 4
     
-    tx_duration = 10
     # Clear rounds
     testcfg['test']['rounds'] = []
 
-    for tps in args.tps:
-        round = deepcopy(ROUND_TEMPLATE)
-        round['label'] = 'open'
-        round['rateControl']['opts']['tps'] = tps
-
-        tx_number = tps * tx_duration
-        round['txNumber'] = tx_number
-        round['workload']['arguments']['numberOfAccounts'] = tx_number
-        round['workload']['module'] = 'benchmarks/scenario/simple/open.js'
-
-        testcfg['test']['rounds'].append(round)
-
     if not args.disable_query:
-        for tps in args.tps:
-            round = deepcopy(ROUND_TEMPLATE)
-            round['label'] = 'query'
-            round['rateControl']['opts']['tps'] = tps
+        txn_types = ['open', 'query', 'transfer']
+    else:
+        txn_types = ['open', 'transfer']
 
-            tx_number = tps * tx_duration
-            round['txNumber'] = tx_number
-            round['workload']['arguments']['numberOfAccounts'] = tx_number
-            round['workload']['module'] = 'benchmarks/scenario/simple/query.js'
-
-            testcfg['test']['rounds'].append(round)
-
-    for tps in args.tps:
+    for txn_type in txn_types:
         round = deepcopy(ROUND_TEMPLATE)
-        round['label'] = 'transfer'
-        round['rateControl']['opts']['tps'] = tps
+        round['label'] = txn_type
+        round['rateControl']['opts']['tps'] = args.tps
 
-        tx_number = tps * tx_duration
+        tx_number = 1000
         round['txNumber'] = tx_number
         round['workload']['arguments']['numberOfAccounts'] = tx_number
-        round['workload']['module'] = 'benchmarks/scenario/simple/transfer.js'
+        round['workload']['module'] = f'benchmarks/scenario/simple/{txn_type}.js'
 
         testcfg['test']['rounds'].append(round)
 
@@ -359,7 +364,6 @@ def main(args):
 
     edit_testconfig(args)
     edit_networkconfig(val_info)
-
 
 if __name__ == '__main__':
     main(args)

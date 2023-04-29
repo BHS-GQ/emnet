@@ -17,7 +17,7 @@ parser.add_argument('-s', '--show', action='store_true')
 args = parser.parse_args()
 
 
-ADDITIONAL_HEADERS=['consensus', 'n', 'block_time']
+ADDITIONAL_HEADERS=['consensus', 'n']
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 INPUT_DIR = Path(f'{FILE_DIR}/{args.input_dir}')
 OUTPUT_DIR = INPUT_DIR / 'cleaned'
@@ -66,7 +66,7 @@ def main(args):
 
         filename = path.name
         tmp = filename.split("_")
-        prepend = [tmp[0], tmp[1].split('=')[-1], tmp[2].split('=')[-1]]
+        prepend = [tmp[0], tmp[1].split('=')[-1]]
         raw_rows = get_rows(path)
         del(raw_rows[0])
         rows.extend([prepend + row for row in raw_rows])
@@ -77,6 +77,8 @@ def main(args):
     df_raw['Throughput (TPS)']=df_raw['Throughput (TPS)'].astype(float)
     df_raw['Avg Latency (s)']=df_raw['Avg Latency (s)'].astype(float)
     df_raw['n']=df_raw['n'].astype(int)
+    csv_path = OUTPUT_DIR / 'compiled.csv'
+    df_raw.to_csv(csv_path)
 
     PLOT_DESIGNS = {
         'consensus': {        
@@ -87,7 +89,8 @@ def main(args):
         'n': {
             4: {'marker': 'o', 'ls': 'solid'},
             8: {'marker': 'x', 'ls': 'dashed'},
-            12: {'marker': '^', 'ls': ':'}
+            12: {'marker': '^', 'ls': ':'},
+            16: {'marker': 'd', 'ls': 'dashdot'}
         }
     }
 
@@ -140,9 +143,6 @@ def main(args):
         plt.savefig(img_path)
         if args.show:
             plt.show()
-
-    csv_path = OUTPUT_DIR / 'compiled.csv'
-    df_raw.to_csv(csv_path)
 
 if __name__ == "__main__":
     main(args)

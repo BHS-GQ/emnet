@@ -31,4 +31,4 @@ git clone https://github.com/hyperledger/caliper-benchmarks
 # Install pumba
 wget https://github.com/alexei-led/pumba/releases/download/0.9.7/pumba_linux_amd64
 chmod +x pumba_linux_amd64
-sudo mv /bin/pumba_linux_amd64 /bin/pumba
+sudo mv pumba_linux_amd64 /bin/pumba

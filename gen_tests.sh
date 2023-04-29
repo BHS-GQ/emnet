@@ -5,6 +5,7 @@
 -d delay "20"
 -j jitter "0"
 -r rate "10mbit"
+-c cpu "2.00"
 '
 
 while getopts ":t:n:o:d:j:r:" opt; do
@@ -20,6 +21,8 @@ while getopts ":t:n:o:d:j:r:" opt; do
     j) jitter="$OPTARG"
     ;;
     r) rate="$OPTARG"
+    ;;
+    c) cpu="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     exit 1
@@ -39,9 +42,22 @@ for n in $all_n
 do
     for algo in $CONSENSUS_ALGOS
     do
-        python3 -m generator.gen_network -c $algo -o $output_dir -t $all_tps -n $n --ip 172.16.239. --disable-query
+      for tps in $all_tps
+      do
+        python3 -m generator.gen_network \
+          -c $algo \
+          -o $output_dir \
+          -t $tps \
+          -n $n \
+          -d $delay \
+          -j $jitter \
+          -r $rate \
+          --ip 172.16.239. \
+          --disable-query \
+          --cpu $cpu
+      done
     done
 done
 
 target_dir="generator/"$output_dir
-python3 -m generator.gen_runner -t $target_dir -d $delay -j $jitter -r $rate
+python3 -m generator.gen_runner -t $target_dir

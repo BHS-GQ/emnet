@@ -30,11 +30,24 @@ COMPOSE_VALIDATOR_TEMPLATE = {
     ],
     "deploy": {
         "resources": {
-            "limits": {"cpus": "2.50", "memory": "4G"},
+            "limits": {"cpus": "2.00", "memory": "4G"},
             "reservations": {"memory": "4G"},
         }
     },
 }
+
+PUMBA_DELAY_TEMPLATE = {'command': '--log-level=debug netem --tc-image="gaiadocker/iproute2" --duration=1h delay --time={time} --jitter={jitter} "re2:validator."',
+                              'container_name': 'pumba_delay',
+                              'depends_on': {},
+                              'image': 'gaiaadm/pumba',
+                              'volumes': ['/var/run/docker.sock:/var/run/docker.sock']}
+
+PUMBA_RATE_TEMPLATE = {'command': '--log-level=debug netem --tc-image="gaiadocker/iproute2" --duration=1h rate -r={rate} "re2:validator."',
+                             'container_name': 'pumba_rate',
+                             'depends_on': {},
+                             'image': 'gaiaadm/pumba',
+                             'volumes': ['/var/run/docker.sock:/var/run/docker.sock']}
+
 
 NGINX_TEMPLATE = {
     "image": "nginx:latest",
