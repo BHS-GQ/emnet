@@ -42,5 +42,5 @@ if __name__ == "__main__":
     client.close()
 
     subprocess.run(['mkdir', args.target.name], cwd=str(DATA_DIR.resolve()))
-    subprocess.run(['tar', '-xzvf', 'temp.tar.gz', '-C', args.target.name], cwd=str(DATA_DIR.resolve()))
+    subprocess.run(['tar', '-xzvf', 'temp.tar.gz', '-C', args.target.name, '--strip-components', '1'], cwd=str(DATA_DIR.resolve()))
     subprocess.run(['rm', '-rf', 'temp.tar.gz'], cwd=str(DATA_DIR.resolve()))
