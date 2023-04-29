@@ -23,6 +23,8 @@ CONFIG = dotenv_values(str(dotenv_path.resolve()))
 CALIPER_TEST_CFG = (PWD / 'testconfig.yaml').resolve()
 CALIPER_NET_CFG = (PWD / 'networkconfig.json').resolve()
 CALIPER_WORKSPACE_PATH = Path(CONFIG['CALIPER_WORKSPACE_PATH'])
+TAR_FILE = 'test.tar.gz'
+TEST_DIR = os.getcwd().split('/')[-1]
 
 if args.output:
     RESULTS_DIR = PWD / args.output
@@ -42,49 +44,60 @@ def main():
     else:
         raise Exception('Test report+logs dir already exists!')
     
+    # tar test directory
+    tar_test = subprocess.run(['tar', '-czvf', f"../{TAR_FILE}", f"../{TEST_DIR}"])
+
     # Connect to net machine
     ssh = paramiko.SSHClient()
     k = paramiko.RSAKey.from_private_key_file(CONFIG['NET_PEM_FILE'])
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(hostname=CONFIG['NET_IP'], username="ubuntu", pkey=k)
+    ssh.connect(CONFIG['NET_IP'], username="ubuntu", pkey=k)
 
     # Pass network files
+    print("connected, now sending")
     sftp = ssh.open_sftp()
-    sftp.put("../.", "~/.")
+    sftp.put(f"../{TAR_FILE}", f'/home/ubuntu/{TAR_FILE}')
+    sftp.close()
 
-    # Start network
-    run_path = PWD / 'run.sh'
-    subprocess.run([str(run_path.resolve())])
+    _stdin, _stdout,_stderr = ssh.exec_command(f'tar -xvzf {TAR_FILE}')
+    time.sleep(5)
+    _stdin, _stdout,_stderr = ssh.exec_command(f'rm -f {TAR_FILE}')
+    _stdin.close()
+    ssh.close()
+    print("done")
+    # # Start network
+    # run_path = PWD / 'run.sh'
+    # subprocess.run([str(run_path.resolve())])
 
-    time.sleep(30)
+    # time.sleep(30)
 
-    # Run Caliper
-    full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
-    subprocess.run([
-        'npx', 'caliper', 'launch', 'manager',
-        '--caliper-workspace', full_caliper_ws_path,
-        '--caliper-benchconfig', str(CALIPER_TEST_CFG),
-        '--caliper-networkconfig', str(CALIPER_NET_CFG)
-    ],
-    cwd=full_caliper_ws_path)
+    # # Run Caliper
+    # full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
+    # subprocess.run([
+    #     'npx', 'caliper', 'launch', 'manager',
+    #     '--caliper-workspace', full_caliper_ws_path,
+    #     '--caliper-benchconfig', str(CALIPER_TEST_CFG),
+    #     '--caliper-networkconfig', str(CALIPER_NET_CFG)
+    # ],
+    # cwd=full_caliper_ws_path)
 
-    remove_path = PWD / 'remove.sh'
-    subprocess.run([str(remove_path.resolve())])
+    # remove_path = PWD / 'remove.sh'
+    # subprocess.run([str(remove_path.resolve())])
     
-    # Get report and logs
-    report_path = CALIPER_WORKSPACE_PATH / 'report.html'
-    target_path = RESULTS_DIR / 'report.html'
-    subprocess.run(['mv', str(report_path.expanduser()), str(target_path.expanduser())])
+    # # Get report and logs
+    # report_path = CALIPER_WORKSPACE_PATH / 'report.html'
+    # target_path = RESULTS_DIR / 'report.html'
+    # subprocess.run(['mv', str(report_path.expanduser()), str(target_path.expanduser())])
 
-    if args.logs:
-        logs_dir = PWD / 'logs' / 'quorum'
-        output_path = RESULTS_DIR / 'logs.tar.gz'
-        subprocess.run(['tar', '-czvf', str(output_path.expanduser()), str(logs_dir.expanduser())])
+    # if args.logs:
+    #     logs_dir = PWD / 'logs' / 'quorum'
+    #     output_path = RESULTS_DIR / 'logs.tar.gz'
+    #     subprocess.run(['tar', '-czvf', str(output_path.expanduser()), str(logs_dir.expanduser())])
     
-    # Write test params
-    params_file = RESULTS_DIR / 'params.json'
-    with open(params_file, 'w') as f:
-        json.dump(CONFIG, f, indent=4, sort_keys=False)
+    # # Write test params
+    # params_file = RESULTS_DIR / 'params.json'
+    # with open(params_file, 'w') as f:
+    #     json.dump(CONFIG, f, indent=4, sort_keys=False)
 
 if __name__ == "__main__":
     try:
