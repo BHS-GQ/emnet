@@ -54,7 +54,9 @@ do
           -r $rate \
           --ip 172.16.239. \
           --disable-query \
-          --cpu $cpu
+          --cpu $cpu \
+          --netip $NET_IP \      # | added as a way to pass .env variables into gen_network.py
+          --netpem $NET_PEM_FILE # | assumes these exist in .env
       done
     done
 done

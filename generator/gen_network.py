@@ -28,6 +28,8 @@ parser.add_argument('-t', '--tps', type=int, required=True)
 parser.add_argument('--cpu', type=str, default='3.00', required=True)
 parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 parser.add_argument('--disable-query', action='store_true')
+parser.add_argument('--netip', type=str, required=True)
+parser.add_argument('--netpem', type=str, required=True)
 args = parser.parse_args()
 
 
@@ -171,6 +173,8 @@ def create_dotenv(args):
         f.write(f"PUMBA_DELAY={args.delay}\n")
         f.write(f"PUMBA_JITTER={args.jitter}\n")
         f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
+        f.write(f"NET_IP=\"{args.netip}\"\n")
+        f.write(f"NET_PEM_FILE=\"{args.pem}\"\n")
 
 def edit_dockerfile(args):
     # Edit GQ Dockerfile
