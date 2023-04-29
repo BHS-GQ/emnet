@@ -35,3 +35,5 @@ sudo mv pumba_linux_amd64 /bin/pumba
 
 # Install python
 sudo apt install python3-pip
+pip install PyYAML
+pip install python-dotenv
