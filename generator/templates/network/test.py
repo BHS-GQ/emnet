@@ -5,6 +5,7 @@ import os
 import argparse
 import json
 import traceback
+import paramiko
 
 from glob import glob
 from pathlib import Path
@@ -40,6 +41,16 @@ def main():
         os.makedirs(RESULTS_DIR)
     else:
         raise Exception('Test report+logs dir already exists!')
+    
+    # Connect to net machine
+    ssh = paramiko.SSHClient()
+    k = paramiko.RSAKey.from_private_key_file(CONFIG['NET_PEM_FILE'])
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname=CONFIG['NET_IP'], username="ubuntu", pkey=k)
+
+    # Pass network files
+    sftp = ssh.open_sftp()
+    sftp.put("../.", "~/.")
 
     # Start network
     run_path = PWD / 'run.sh'
