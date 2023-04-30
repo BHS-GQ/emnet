@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# set cwd to current location
+cd "${0%/*}" 
+
 me=`basename "$0"`
 
 if [ "$me" = ".common.sh" ];then

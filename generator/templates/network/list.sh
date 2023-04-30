@@ -1,5 +1,8 @@
 #!/bin/bash -eu
 
+# set cwd to current location
+cd "${0%/*}" 
+
 # Copyright 2018 ConsenSys AG.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
