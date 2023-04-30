@@ -90,7 +90,7 @@ def main():
         pumba_delay.wait()
     if pumba_rate is not None:
         pumba_rate.terminate()
-        pumba_delay.wait()
+        pumba_rate.wait()
 
     remove_path = PWD / 'remove.sh'
     subprocess.run([str(remove_path.resolve())])
