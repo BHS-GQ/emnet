@@ -16,13 +16,14 @@ parser.add_argument('-t', '--target', type=Path, required=True)
 args = parser.parse_args()
 
 TEST_DIR = args.target
+TEST_ID_COLS = ['Name', 'n', 'algo', 'tps_param', 'cpu_limit', 'delay', 'jitter', 'rate_limit']
 PLOT_DESIGNS = {
-    'Consensus': {        
+    'algo': {        
         'hotstuff': {'color': 'tab:blue'},
         'ibft': {'color': 'tab:green'},
         'qbft': {'color': 'tab:orange'}
     },
-    'N': {
+    'n': {
         '4': {'marker': 'o', 'ls': 'solid'},
         '8': {'marker': 'x', 'ls': 'dashed'},
         '12': {'marker': '^', 'ls': ':'},
@@ -61,19 +62,19 @@ def compile_reports():
         df_trans_perf = pd.read_html(str(tables[6]))[0]
         df_trans_perf[to_numeric_cols] = df_trans_perf[to_numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
 
-        df.loc[:, 'Max Validator CPU%(max)'] = [
+        df.loc[:, 'cpu%_max_all'] = [
             df_open_perf['CPU%(max)'].max(), df_trans_perf['CPU%(max)'].max()
         ]
-        df.loc[:, 'Max Validator CPU%(avg)'] = [
+        df.loc[:, 'cpu%_max_avg_all'] = [
             df_open_perf['CPU%(avg)'].max(), df_trans_perf['CPU%(avg)'].max()
         ]
-        df.loc[:, 'Total Traffic In [MB]'] = [
+        df.loc[:, 'neti_total_mb'] = [
             df_open_perf['Traffic In [MB]'].sum(),
             df_trans_perf['Traffic In [MB]'].sum()
         ]
         open_o_sum = df_open_perf.loc[df_open_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
         trans_o_sum = df_trans_perf.loc[df_trans_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
-        df.loc[:, 'Total Traffic Out [MB]'] = [
+        df.loc[:, 'neto_total_mb'] = [
             open_o_sum,
             trans_o_sum
         ]
@@ -81,13 +82,13 @@ def compile_reports():
             open_o_sum / df_open_perf.loc[df_open_perf['Name'] == '/nginx', 'Traffic In [MB]'][0],
             trans_o_sum / df_trans_perf.loc[df_trans_perf['Name'] == '/nginx', 'Traffic In [MB]'][0]
         ]
-        df.loc[:, 'N'] = [test_params['N_VALIDATORS']] * 2
-        df.loc[:, 'Consensus'] = [test_params['CONSENSUS_ALGO']] * 2
-        df.loc[:, 'True TPS'] = [test_params['TPS']] * 2
-        df.loc[:, 'CPU Limit'] = [test_params['CPU_LIMIT']] * 2
-        df.loc[:, 'Delay'] = [test_params['PUMBA_DELAY']] * 2
-        df.loc[:, 'Jitter'] = [test_params['PUMBA_JITTER']] * 2
-        df.loc[:, 'Rate'] = [test_params['PUMBA_RATE']] * 2
+        df.loc[:, 'n'] = [test_params['N_VALIDATORS']] * 2
+        df.loc[:, 'algo'] = [test_params['CONSENSUS_ALGO']] * 2
+        df.loc[:, 'tps_param'] = [test_params['TPS']] * 2
+        df.loc[:, 'cpu_limit'] = [test_params['CPU_LIMIT']] * 2
+        df.loc[:, 'delay'] = [test_params['PUMBA_DELAY']] * 2
+        df.loc[:, 'jitter'] = [test_params['PUMBA_JITTER']] * 2
+        df.loc[:, 'rate_limit'] = [test_params['PUMBA_RATE']] * 2
         df.loc[:, 'r_idx'] = [result_idx] * 2
         
         dfs.append(df)
@@ -97,7 +98,48 @@ def compile_reports():
     return master_df
 
 
-def make_line_plot(
+def make_lineplot(
+    df: pd.DataFrame,
+    groupby_cols: list,
+    x_col: str,
+    x_label: str,
+    y_col: str,
+    y_label: str,
+    file_tag: str,
+    transaction_types: list,
+    img_dir: Path,
+):
+    _df = df.copy()
+    _df = _df.groupby(TEST_ID_COLS)
+    _df = _df[y_col].mean().reset_index()
+    for transaction_type in transaction_types:
+        _dft = _df.loc[_df['Name'] == transaction_type]
+        fig, ax = plt.subplots(figsize=(10,8))
+        for key, grp in _dft.groupby(groupby_cols):
+            grp = grp.sort_values(by=[x_col])
+            color = PLOT_DESIGNS['algo'][key[0]]['color']
+            marker = PLOT_DESIGNS['n'][key[1]]['marker']
+            linestyle = PLOT_DESIGNS['n'][key[1]]['ls']
+
+            ax.plot(
+                grp[x_col],
+                grp[y_col],
+                color=color,
+                marker=marker,
+                linestyle=linestyle,
+                linewidth=1,
+                label=f"{key[0]}_{key[1]}"
+            )
+        ax.set_title(f'{x_label} vs. {y_label} of {transaction_type}')
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+
+        ax.legend()
+        img_path = img_dir / f'{file_tag}_{transaction_type}.png'
+        plt.savefig(img_path)
+
+
+def make_lineplot_boxplot(
     df: pd.DataFrame,
     groupby_cols: list,
     x_col: str,
@@ -111,20 +153,39 @@ def make_line_plot(
     for transaction_type in transaction_types:
         _df = df.copy()
         _df = _df.loc[_df['Name'] == transaction_type]
-        _df = _df.groupby(['N', 'Consensus', 'True TPS', 'CPU Limit', 'Delay', 'Jitter', 'Rate'])
-        _df = _df[y_col].mean().reset_index()
         fig, ax = plt.subplots(figsize=(10,8))
         for key, grp in _df.groupby(groupby_cols):
             grp = grp.sort_values(by=[x_col])
+            color = PLOT_DESIGNS['algo'][key[0]]['color']
+            marker = PLOT_DESIGNS['n'][key[1]]['marker']
+            linestyle = PLOT_DESIGNS['n'][key[1]]['ls']
+
+            x = grp[x_col].values
+            mu = grp[f'{y_col}_mean'].values
             ax.plot(
-                grp[x_col],
-                grp[y_col],
-                color=PLOT_DESIGNS['Consensus'][key[0]]['color'],
-                marker=PLOT_DESIGNS['N'][key[1]]['marker'],
-                linestyle=PLOT_DESIGNS['N'][key[1]]['ls'],
+                [100, 150, 200],
+                mu,
+                color=color,
+                marker=marker,
+                linestyle=linestyle,
                 linewidth=1,
                 label=f"{key[0]}_{key[1]}"
             )
+
+            ax.boxplot(
+                grp['tput_all'],
+                positions=[100, 150, 200],
+                sym='k+',
+                # notch=1,
+                showfliers=False,
+                showmeans=False,
+                patch_artist=True,
+                boxprops=dict(facecolor=color),
+                widths=tuple([3] * 3),
+                zorder=1
+            )
+
+
         ax.set_title(f'{x_label} vs. {y_label} of {transaction_type}')
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
@@ -134,6 +195,19 @@ def make_line_plot(
         plt.savefig(img_path)
 
 
+def get_grouped_df(df: pd.DataFrame):
+    _df = df.groupby(TEST_ID_COLS)
+    df_out = _df[['Throughput (TPS)', 'neto_total_mb']].agg(
+        tput_mean=('Throughput (TPS)', 'mean'),
+        tput_all=('Throughput (TPS)', lambda x: list(x)),
+        tput_std=('Throughput (TPS)', 'std'),
+        neto_mean=('neto_total_mb', 'mean'),
+        neto_all=('neto_total_mb', lambda x: list(x)),
+        neto_std=('neto_total_mb', 'std'),
+    ).reset_index()
+
+    return df_out
+
 def generate_plots(df):
     plots_dir = TEST_DIR / 'plots'
     if os.path.exists(plots_dir):
@@ -141,12 +215,12 @@ def generate_plots(df):
     os.makedirs(plots_dir)
 
     # throughput plots
-    make_line_plot(
-        df,
-        ['Consensus', 'N'],
-        'True TPS',
+    make_lineplot_boxplot(
+        get_grouped_df(df),
+        ['algo', 'n'],
+        'tps_param',
         'Send Rate (TPS)',
-        'Throughput (TPS)',
+        'tput',
         'Avg. Throughput (TPS)',
         'throughput',
         ['open', 'transfer'],
@@ -154,10 +228,10 @@ def generate_plots(df):
     )
 
     # latency plots
-    make_line_plot(
+    make_lineplot(
         df,
-        ['Consensus', 'N'],
-        'True TPS',
+        ['algo', 'n'],
+        'tps_param',
         'Send Rate (TPS)',
         'Avg Latency (s)',
         'Avg. Latency (s)',
@@ -167,25 +241,25 @@ def generate_plots(df):
     )
 
     # metrics plots
-    make_line_plot(
+    make_lineplot(
         df,
-        ['Consensus', 'N'],
-        'True TPS',
+        ['algo', 'n'],
+        'tps_param',
         'Send Rate (TPS)',
-        'Total Traffic Out [MB]',
+        'neto_total_mb',
         'Total Network Out (MB)',
         'traffic_out',
         ['open', 'transfer'],
         plots_dir,
     )
-    make_line_plot(
+    make_lineplot(
         df,
-        ['Consensus', 'N'],
-        'True TPS',
+        ['algo', 'n'],
+        'tps_param',
         'Send Rate (TPS)',
-        'Max Validator CPU%(max)',
+        'cpu%_max_all',
         'Average Max. CPU%',
-        'cpu_max',
+        'cpu_max_all',
         ['open', 'transfer'],
         plots_dir,
     )
