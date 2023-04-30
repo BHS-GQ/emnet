@@ -24,7 +24,7 @@ CALIPER_TEST_CFG = (PWD / 'testconfig.yaml').resolve()
 CALIPER_NET_CFG = (PWD / 'networkconfig.json').resolve()
 CALIPER_WORKSPACE_PATH = Path(CONFIG['CALIPER_WORKSPACE_PATH'])
 TAR_FILE = 'test.tar.gz'
-TEST_DIR = os.getcwd().split('/')[-1]
+TEST_DIR = Path(os.getcwd().split('/')[-1])
 
 if args.output:
     RESULTS_DIR = PWD / args.output
@@ -45,7 +45,7 @@ def main():
         raise Exception('Test report+logs dir already exists!')
     
     # tar test directory
-    tar_test = subprocess.run(['tar', '-czvf', f"../{TAR_FILE}", f"../{TEST_DIR}"])
+    tar_test = subprocess.run(['tar', '-czvf', f"../{TAR_FILE}", f"../{str(TEST_DIR)}"])
 
     # Connect to net machine
     ssh = paramiko.SSHClient()
@@ -61,14 +61,11 @@ def main():
     _stdin, _stdout,_stderr = ssh.exec_command(f'tar -xvzf {TAR_FILE}')
     time.sleep(5) # tar is incomplete without a sleep
     _stdin, _stdout,_stderr = ssh.exec_command(f'rm -f {TAR_FILE}')
-    _stdin.close()
-    ssh.close()
+    
 
     # Start network
     # assumes that required dependencies are already installed in net machine
-    run_path = PWD / 'run.sh'
-    subprocess.run([str(run_path.resolve())])
-
+    _stdin, _stdout,_stderr = ssh.exec_command(f'./{str(TEST_DIR)}/run.sh')
     time.sleep(30)
 
     # Run Caliper
@@ -81,9 +78,8 @@ def main():
     ],
     cwd=full_caliper_ws_path)
 
-    remove_path = PWD / 'remove.sh'
-    subprocess.run([str(remove_path.resolve())])
-    
+    _stdin, _stdout,_stderr = ssh.exec_command(f'./{str(TEST_DIR)}/remove.sh')
+    time.sleep(15)
     # Get report and logs
     report_path = CALIPER_WORKSPACE_PATH / 'report.html'
     target_path = RESULTS_DIR / 'report.html'
@@ -98,6 +94,12 @@ def main():
     params_file = RESULTS_DIR / 'params.json'
     with open(params_file, 'w') as f:
         json.dump(CONFIG, f, indent=4, sort_keys=False)
+
+
+    # Cleanup
+    _stdin, _stdout,_stderr = ssh.exec_command(f'rm -r ./{str(TEST_DIR)}')
+    _stdin.close()
+    ssh.close()
 
 if __name__ == "__main__":
     try:
