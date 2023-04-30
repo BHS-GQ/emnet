@@ -12,7 +12,8 @@ PWD = Path(__file__).parent
 
 def run_all():
     prev_consensus = ''
-    test_dirs = glob('./*/').sort()
+    test_dirs = glob('./*/')
+    test_dirs.sort()
     for test_dir in test_dirs:
         td_path = Path(test_dir)
         td_full = td_path.resolve()
