@@ -31,13 +31,15 @@ parser.add_argument('--disable-query', action='store_true')
 args = parser.parse_args()
 
 
+n_val_str = str(args.n_validators)
+tps_str = str(args.tps)
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
-GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{args.n_validators}')
-BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{args.n_validators}')  # Only used by hotstuff
+GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{n_val_str}')
+BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{n_val_str}')  # Only used by hotstuff
 TEMPLATE_DIR = Path(f'{FILE_DIR}/templates')
 GENERATED_DIR = Path(f'{FILE_DIR}/{args.output}')
 OUTPUT_DIR = Path(
-    f'{GENERATED_DIR}/{args.consensus_algo}_n={args.n_validators}_tps={args.tps}'
+    f'{GENERATED_DIR}/{args.consensus_algo}_n={n_val_str}_tps={tps_str}'
 )
 
 
