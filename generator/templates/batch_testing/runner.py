@@ -17,7 +17,6 @@ def run_all():
         for idx in range(3): # todo: argparse
             logging.info(f"Starting {test_dir} Run {idx + 1}...")
             subprocess.run(['python3', 'test.py'], cwd=test_dir)
-            subprocess.run(['docker', 'system', 'prune', '-f'], cwd=test_dir)
             time.sleep(5)
 
 if __name__ == "__main__":

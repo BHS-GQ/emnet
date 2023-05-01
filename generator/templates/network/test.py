@@ -97,7 +97,10 @@ def main():
 
 
     # Cleanup
+    _stdin, _stdout,_stderr = ssh.exec_command(f'docker system prune -f')
+    time.sleep(5)
     _stdin, _stdout,_stderr = ssh.exec_command(f'rm -r ./{str(TEST_DIR)}')
+    time.sleep(5)
     _stdin.close()
     ssh.close()
 
