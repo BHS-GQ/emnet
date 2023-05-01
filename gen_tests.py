@@ -6,11 +6,11 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tps', type=int, nargs='+', required=True)
 parser.add_argument('-n', '--n_validators', type=int, nargs='+', required=True)
-parser.add_argument('-d', '--delay', type=str, required=True)
-parser.add_argument('-j', '--jitter', type=str, required=True)
-parser.add_argument('-r', '--rate', type=str, required=True)
 parser.add_argument('-c', '--cpu_limit', type=str, required=True)
 parser.add_argument('-a', '--algos', type=str, nargs='+', required=True)
+parser.add_argument('-d', '--delay', type=str)
+parser.add_argument('-j', '--jitter', type=str)
+parser.add_argument('-r', '--rate', type=str)
 parser.add_argument('-o', '--output_dir', type=Path)
 args = parser.parse_args()
 
@@ -20,11 +20,20 @@ def generate_name(args):
     joined_tps = ','.join(map(lambda x: str(x), args.tps))
     joined_algos = ','.join(args.algos)
     
-    return f'_{joined_algos}_n={joined_n}_tps={joined_tps}_net=d{args.delay}-j{args.jitter}-{args.rate}'
+    name = f'_{joined_algos}_n={joined_n}_tps={joined_tps}'
+    if args.delay or args.jitter or args.rate:
+        name += '_net='
+    if args.delay:
+        name += f'd{args.delay}'
+    if args.jitter:
+        name += f'j{args.delay}'
+    if args.rate:
+        name += f'r{args.delay}'
+    
+    return name
 
 
 if __name__ == "__main__":
-    print(args)
     if args.output_dir is None:
         output_dir = generate_name(args)
     else:
@@ -40,13 +49,16 @@ if __name__ == "__main__":
                     '-o', output_dir,
                     '-t', str(tps),
                     '-n', str(n),
-                    '-d', args.delay,
-                    '-j', args.jitter,
-                    '-r', args.rate,
                     '--cpu', args.cpu_limit,
                     '--ip', '172.16.239.',
                     '--disable-query'
                 ]
+                if args.delay:
+                    x.extend(['-d', args.delay])
+                if args.jitter:
+                    x.extend(['-j', args.jitter])
+                if args.rate:
+                    x.extend(['-r', args.rate])
                 subprocess.run(x)
 
     # copy runner/fetcher scripts

@@ -16,7 +16,7 @@ parser.add_argument('-t', '--target', type=Path, required=True)
 args = parser.parse_args()
 
 TEST_DIR = args.target
-TEST_ID_COLS = ['Name', 'n', 'algo', 'tps_param', 'cpu_limit', 'delay', 'jitter', 'rate_limit']
+TEST_ID_COLS = ['Name', 'n', 'algo', 'tps_param', 'cpu_limit', 'delay', 'rate_limit']
 PLOT_DESIGNS = {
     'algo': {        
         'hotstuff': {'color': 'tab:blue'},
@@ -36,6 +36,7 @@ def compile_reports():
     dfs = []
     result_dirs = glob(f'{str(TEST_DIR.resolve())}/*/report_*/')
     for result_dir in result_dirs:
+        print(f'Processing {result_dir}...')
         rd_path = Path(result_dir)
         result_idx = rd_path.name.split('_')[-1]
         report_file = rd_path / 'report.html'
@@ -54,46 +55,94 @@ def compile_reports():
             'CPU%(avg)',
             'CPU%(max)',
             'Traffic In [MB]',
-            'Traffic Out [MB]'
+            'Traffic Out [MB]',
         ]
         tables = soup.findAll("table")
-        df_open_perf = pd.read_html(str(tables[3]))[0]
-        df_open_perf[to_numeric_cols] = df_open_perf[to_numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
-        df_trans_perf = pd.read_html(str(tables[6]))[0]
-        df_trans_perf[to_numeric_cols] = df_trans_perf[to_numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
-
-        df.loc[:, 'cpu%_max_all'] = [
-            df_open_perf['CPU%(max)'].max(), df_trans_perf['CPU%(max)'].max()
-        ]
-        df.loc[:, 'cpu%_max_avg_all'] = [
-            df_open_perf['CPU%(avg)'].max(), df_trans_perf['CPU%(avg)'].max()
-        ]
-        df.loc[:, 'neti_total_mb'] = [
-            df_open_perf['Traffic In [MB]'].sum(),
-            df_trans_perf['Traffic In [MB]'].sum()
-        ]
-        open_o_sum = df_open_perf.loc[df_open_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
-        trans_o_sum = df_trans_perf.loc[df_trans_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
-        df.loc[:, 'neto_total_mb'] = [
-            open_o_sum,
-            trans_o_sum
-        ]
-        df.loc[:, 'Normalized Traffic Out [MB]'] = [  # todo: is this a useful metric?
-            open_o_sum / df_open_perf.loc[df_open_perf['Name'] == '/nginx', 'Traffic In [MB]'][0],
-            trans_o_sum / df_trans_perf.loc[df_trans_perf['Name'] == '/nginx', 'Traffic In [MB]'][0]
-        ]
-        df.loc[:, 'n'] = [test_params['N_VALIDATORS']] * 2
-        df.loc[:, 'algo'] = [test_params['CONSENSUS_ALGO']] * 2
-        df.loc[:, 'tps_param'] = [test_params['TPS']] * 2
-        df.loc[:, 'cpu_limit'] = [test_params['CPU_LIMIT']] * 2
-        df.loc[:, 'delay'] = [test_params['PUMBA_DELAY']] * 2
-        df.loc[:, 'jitter'] = [test_params['PUMBA_JITTER']] * 2
-        df.loc[:, 'rate_limit'] = [test_params['PUMBA_RATE']] * 2
-        df.loc[:, 'r_idx'] = [result_idx] * 2
         
+        has_open = False
+        has_trans = False
+        new_cols: dict = {
+            'cpu%_max_all': [],
+            'cpu%_max_avg_all': [],
+            'neti_total_mb': [],
+            'neto_total_mb': [],
+            'n': [],
+            'algo': [],
+            'tps_param': [],
+            'cpu_limit': [],
+            'delay': [],
+            'rate_limit': [],
+            'r_idx': [],
+        }
+
+        if len(tables) < 4:
+            print('Failed open!')
+        else:
+            has_open = True
+
+            df_open_perf = pd.read_html(str(tables[3]))[0]
+            df_open_perf[to_numeric_cols] = df_open_perf[to_numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
+            new_cols['cpu%_max_all'].append(df_open_perf['CPU%(max)'].max())
+            new_cols['cpu%_max_avg_all'].append(df_open_perf['CPU%(avg)'].max())
+
+            open_i_sum = df_open_perf.loc[df_open_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
+            new_cols['neti_total_mb'].append(open_i_sum)
+
+            open_o_sum = df_open_perf.loc[df_open_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
+            new_cols['neto_total_mb'].append(open_o_sum)
+
+            new_cols['n'].append(test_params['N_VALIDATORS'])
+            new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
+            new_cols['tps_param'].append(int(test_params['TPS']))
+            new_cols['cpu_limit'].append(test_params['CPU_LIMIT'])
+            new_cols['r_idx'].append(result_idx)
+            if 'PUMBA_DELAY' in test_params:
+                new_cols['delay'].append(test_params['PUMBA_DELAY'])
+            else:
+                new_cols['delay'].append(None)
+            if 'PUMBA_RATE' in test_params:
+                new_cols['rate_limit'].append(test_params['PUMBA_RATE'])
+            else:
+                new_cols['rate_limit'].append(None)
+
+        if len(tables) < 7:
+            print('Failed transfer!')
+        else:
+            has_trans = True
+
+            df_trans_perf = pd.read_html(str(tables[6]))[0]
+            df_trans_perf[to_numeric_cols] = df_trans_perf[to_numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
+
+            new_cols['cpu%_max_all'].append(df_trans_perf['CPU%(max)'].max())
+            new_cols['cpu%_max_avg_all'].append(df_trans_perf['CPU%(avg)'].max())
+
+            trans_i_sum = df_trans_perf.loc[df_trans_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
+            new_cols['neti_total_mb'].append(trans_i_sum)
+
+            trans_o_sum = df_trans_perf.loc[df_trans_perf['Name'] != '/nginx', 'Traffic Out [MB]'].sum()
+            new_cols['neto_total_mb'].append(trans_o_sum)
+
+            new_cols['n'].append(test_params['N_VALIDATORS'])
+            new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
+            new_cols['tps_param'].append(int(test_params['TPS']))
+            new_cols['cpu_limit'].append(test_params['CPU_LIMIT'])
+            new_cols['r_idx'].append(result_idx)
+            if 'PUMBA_DELAY' in test_params:
+                new_cols['delay'].append(test_params['PUMBA_DELAY'])
+            else:
+                new_cols['delay'].append(None)
+            if 'PUMBA_RATE' in test_params:
+                new_cols['rate_limit'].append(test_params['PUMBA_RATE'])
+            else:
+                new_cols['rate_limit'].append(None)
+
+        for key, value in new_cols.items():
+            df.loc[:, key] = value
+
         dfs.append(df)
 
     master_df = pd.concat(dfs)
+    master_df = master_df.fillna(value=0)
 
     return master_df
 
@@ -160,10 +209,10 @@ def make_lineplot_boxplot(
             marker = PLOT_DESIGNS['n'][key[1]]['marker']
             linestyle = PLOT_DESIGNS['n'][key[1]]['ls']
 
-            x = grp[x_col].values
+            x_vals = [int(e) for e in grp[x_col].values]
             mu = grp[f'{y_col}_mean'].values
             ax.plot(
-                [100, 150, 200],
+                x_vals,
                 mu,
                 color=color,
                 marker=marker,
@@ -173,15 +222,14 @@ def make_lineplot_boxplot(
             )
 
             ax.boxplot(
-                grp['tput_all'],
-                positions=[100, 150, 200],
-                sym='k+',
+                grp[f'{y_col}_all'],
+                positions=x_vals,
                 # notch=1,
+                sym='k+',
                 showfliers=False,
                 showmeans=False,
                 patch_artist=True,
                 boxprops=dict(facecolor=color),
-                widths=tuple([3] * 3),
                 zorder=1
             )
 
@@ -196,7 +244,8 @@ def make_lineplot_boxplot(
 
 
 def get_grouped_df(df: pd.DataFrame):
-    _df = df.groupby(TEST_ID_COLS)
+    _df = df.copy().groupby(TEST_ID_COLS)
+
     df_out = _df[['Throughput (TPS)', 'neto_total_mb']].agg(
         tput_mean=('Throughput (TPS)', 'mean'),
         tput_all=('Throughput (TPS)', lambda x: list(x)),
@@ -215,8 +264,9 @@ def generate_plots(df):
     os.makedirs(plots_dir)
 
     # throughput plots
+    df_grouped = get_grouped_df(df)
     make_lineplot_boxplot(
-        get_grouped_df(df),
+        df_grouped,
         ['algo', 'n'],
         'tps_param',
         'Send Rate (TPS)',
