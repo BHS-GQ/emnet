@@ -5,6 +5,7 @@ import os
 import argparse
 import json
 import traceback
+import re
 
 from glob import glob
 from pathlib import Path
@@ -29,40 +30,39 @@ else:
     max_report_idx = 0
     report_dirs = glob(f'{PWD}/report_*')
     if len(report_dirs) > 0: 
-        report_dirs.sort()
-        max_report_idx = int(report_dirs[-1].split('_')[-1])
+        report_idx = [
+            int(rdir.split('_')[-1])
+            for rdir in report_dirs
+        ]
+        max_report_idx = max(report_idx)
     RESULTS_DIR = PWD / f'report_{max_report_idx + 1}'
 
-procs = []
+pumba_proc = None
+pumba_log = open('pumba.log', 'w')
 
-def main():
-    if not os.path.exists(RESULTS_DIR):
-        os.makedirs(RESULTS_DIR)
-    else:
-        raise Exception('Test report+logs dir already exists!')
-
+def run_test():
     # Start network
     run_path = PWD / 'run.sh'
     subprocess.run([str(run_path.resolve())])
 
     time.sleep(5)
     # Run pumba netem
-    pumba_delay, pumba_rate = None, None
-    if CONFIG['PUMBA_DELAY'] != '0' or CONFIG['PUMBA_JITTER'] != '0':
-        pumba_delay = subprocess.Popen([
+    delay_flag, rate_flag = False, False
+    if 'PUMBA_DELAY' in CONFIG:
+        delay_val = CONFIG['PUMBA_DELAY'].split('ms')[0]
+        pumba = [
             'pumba', '--log-level', 'debug',
             'netem',
             '--tc-image', 'gaiadocker/iproute2',
             '--duration', '1h',
             'delay',
-            '--time', CONFIG['PUMBA_DELAY'],
-            '--jitter', CONFIG['PUMBA_JITTER'],
+            '--time', delay_val,
+            '--jitter', '0',
             're2:validator.'
-        ])
-        procs.append(pumba_delay)
-
-    if 'PUMBA_RATE' in CONFIG:
-        pumba_rate = subprocess.Popen([
+        ]
+        delay_flag = True
+    elif 'PUMBA_RATE' in CONFIG:
+        pumba = [
             'pumba', '--log-level', 'debug', 
             'netem',
             '--tc-image', 'gaiadocker/iproute2',
@@ -70,9 +70,32 @@ def main():
             'rate',
             '-r', CONFIG['PUMBA_RATE'],
             're2:validator.'
-        ])
-        procs.append(pumba_rate)
-    time.sleep(30)
+        ]
+        rate_flag = True
+    
+    pumba_flag = delay_flag or rate_flag
+    if delay_flag and rate_flag:
+        raise Exception('Both pumba delay and rate provided!')
+    elif pumba_flag:
+        pumba_proc = subprocess.Popen(
+            pumba,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+
+        tc_started = 0
+        for line in pumba_proc.stdout:
+            line = line.decode()
+            print(line, end='')
+            msg_starting = re.findall(
+                'msg="tc container created, starting it"',
+                line
+            )
+            if len(msg_starting) > 0:
+                tc_started += 1
+                if tc_started == int(CONFIG['N_VALIDATORS']):
+                    print('All tc containers started. Running Caliper...')
+                    break
 
     # Run Caliper
     full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
@@ -85,16 +108,27 @@ def main():
     cwd=full_caliper_ws_path)
 
     # Shutdown everything
-    if pumba_delay is not None:
-        pumba_delay.terminate()
-        pumba_delay.wait()
-    if pumba_rate is not None:
-        pumba_rate.terminate()
-        pumba_rate.wait()
+    if pumba_flag:
+        pumba_proc.terminate()
+        pumba_proc.wait()
+        pumba_log.close()
 
     remove_path = PWD / 'remove.sh'
     subprocess.run([str(remove_path.resolve())])
-    
+
+def main():
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
+    else:
+        raise Exception('Test results dir already exists!')
+
+    # Run test proper and time it    
+    start = time.time()
+    run_test()
+    end = time.time()
+    elapsed = end - start
+    CONFIG['TIME_TAKEN'] = elapsed
+
     # Get report and logs
     report_path = CALIPER_WORKSPACE_PATH / 'report.html'
     target_path = RESULTS_DIR / 'report.html'
@@ -116,7 +150,8 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(traceback.format_exc())
 
-        for proc in procs:
-            proc.terminate()
-            proc.wait()
+        if pumba_proc is not None:
+            pumba_proc.terminate()
+            pumba_proc.wait()
+            pumba_log.close()
         subprocess.run(['./remove.sh'])

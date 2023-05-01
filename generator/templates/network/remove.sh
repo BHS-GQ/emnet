@@ -23,31 +23,20 @@ removeDockerImage(){
 }
 
 echo "${bold}*************************************"
-echo "Quorum Dev Quickstart "
+echo "ETH 1 Testbench "
 echo "*************************************${normal}"
 echo "Stop and remove network..."
 
 docker-compose down -v
 docker-compose rm -sfv
+
+# Remove validator images
 docker rmi $(docker images | grep validator | tr -s ' ' | cut -d ' ' -f 3) -f
 
 if [ -f "docker-compose-deps.yml" ]; then
     echo "Stopping dependencies..."
     docker-compose -f docker-compose-deps.yml down -v
     docker-compose rm -sfv
-fi
-# pet shop dapp
-if [[ ! -z `docker ps -a | grep quorum-dev-quickstart_pet_shop` ]]; then
-  docker stop quorum-dev-quickstart_pet_shop
-  docker rm quorum-dev-quickstart_pet_shop
-  removeDockerImage quorum-dev-quickstart_pet_shop
-fi
-
-if grep -q 'kibana:' docker-compose.yml 2> /dev/null ; then
-  docker image rm quorum-test-network_elasticsearch
-  docker image rm quorum-test-network_logstash
-  docker image rm quorum-test-network_filebeat
-  docker image rm quorum-test-network_metricbeat
 fi
 
 rm ${LOCK_FILE}

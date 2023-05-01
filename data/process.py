@@ -229,7 +229,8 @@ def make_lineplot_boxplot(
                 showfliers=False,
                 showmeans=False,
                 patch_artist=True,
-                boxprops=dict(facecolor=color),
+                boxprops=dict(facecolor=color, alpha=0.5),
+                widths=[3] * len(x_vals),
                 zorder=1
             )
 

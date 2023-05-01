@@ -21,11 +21,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--consensus-algo', type=str, required=True)
 parser.add_argument('-n', '--n-validators', type=int, required=True)
 parser.add_argument('-o', '--output', type=Path, required=True)
-parser.add_argument('-d', '--delay', type=str, required=True)
-parser.add_argument('-j', '--jitter', type=str, required=True)
-parser.add_argument('-r', '--rate', type=str)
 parser.add_argument('-t', '--tps', type=int, required=True)
 parser.add_argument('--cpu', type=str, default='3.00', required=True)
+parser.add_argument('-d', '--delay', type=str)
+parser.add_argument('-j', '--jitter', type=str)
+parser.add_argument('-r', '--rate', type=str)
 parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 parser.add_argument('--disable-query', action='store_true')
 args = parser.parse_args()
@@ -170,9 +170,12 @@ def create_dotenv(args):
         f.write(f"N_VALIDATORS={args.n_validators}\n")
         f.write(f"TPS={args.tps}\n")
         f.write(f"CPU_LIMIT={args.cpu}\n")
-        f.write(f"PUMBA_DELAY={args.delay}\n")
-        f.write(f"PUMBA_JITTER={args.jitter}\n")
-        f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
+        if args.delay:
+            f.write(f"PUMBA_DELAY={args.delay}\n")
+        if args.jitter:
+            f.write(f"PUMBA_JITTER={args.jitter}\n")
+        if args.rate:
+            f.write(f"PUMBA_RATE=\"{args.rate}\"\n")
 
 def edit_dockerfile(args):
     # Edit GQ Dockerfile
@@ -223,22 +226,6 @@ def edit_docker_compose(args, val_info: dict):
         val['deploy']['resources']['limits']['cpus'] = args.cpu
 
         dc['services'][validator_name] = val
-
-    # # Add pumba to services
-    # depends_on = {}
-    # for val_idx in range(args.n_validators):
-    #     validator_name = f"validator{val_idx}"
-    #     depends_on[validator_name] = {"condition": "service_healthy"}
-    # if args.delay != '0' or args.jitter != '0':
-    #     pumba_delay = deepcopy(PUMBA_DELAY_TEMPLATE)
-    #     pumba_delay['command'] = pumba_delay['command'].format(time=args.delay, jitter=args.jitter)
-    #     pumba_delay['depends_on'] = depends_on
-    #     dc['services']['pumba_delay'] = pumba_delay
-    # if args.rate:
-    #     pumba_rate = deepcopy(PUMBA_RATE_TEMPLATE)
-    #     pumba_rate['command'] = pumba_rate['command'].format(rate=args.rate)
-    #     pumba_rate['depends_on'] = depends_on
-    #     dc['services']['pumba_rate'] = pumba_rate
 
     # Update docker-compose.yml
     with open(dc_file, 'w') as f:

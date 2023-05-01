@@ -23,7 +23,7 @@ mkdir -p logs/besu logs/quorum logs/tessera
 echo "docker-compose.yml" > ${LOCK_FILE}
 
 echo "${bold}*************************************"
-echo "Quorum Dev Quickstart"
+echo "ETH 1 Testbench "
 echo "*************************************${normal}"
 echo "Start network"
 echo "--------------------"
@@ -35,7 +35,7 @@ if [ -f "docker-compose-deps.yml" ]; then
 fi
 
 echo "Starting network..."
-docker-compose build --no-cache
+docker-compose build
 docker-compose up --detach
 
 
