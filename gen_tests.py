@@ -26,9 +26,9 @@ def generate_name(args):
     if args.delay:
         name += f'd{args.delay}'
     if args.jitter:
-        name += f'j{args.delay}'
+        name += f'j{args.jitter}'
     if args.rate:
-        name += f'r{args.delay}'
+        name += f'r{args.rate}'
     
     return name
 
