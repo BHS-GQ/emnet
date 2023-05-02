@@ -7,3 +7,4 @@ generator/_*
 _*
 .env
 *.tar.gz
+*.tar
