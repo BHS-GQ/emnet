@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 
+from copy import deepcopy
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -8,27 +9,33 @@ parser.add_argument('-t', '--tps', type=int, nargs='+', required=True)
 parser.add_argument('-n', '--n_validators', type=int, nargs='+', required=True)
 parser.add_argument('-c', '--cpu_limit', type=str, required=True)
 parser.add_argument('-a', '--algos', type=str, nargs='+', required=True)
-parser.add_argument('-d', '--delay', type=str)
-parser.add_argument('-j', '--jitter', type=str)
-parser.add_argument('-r', '--rate', type=str)
+parser.add_argument('-d', '--delay', type=int, nargs='+')
+parser.add_argument('-j', '--jitter', type=str, nargs='+')
+parser.add_argument('-r', '--rate', type=str, nargs='+')
 parser.add_argument('-o', '--output_dir', type=Path)
 args = parser.parse_args()
 
+def joined_arg(arg):
+    return ','.join(map(lambda x: str(x), arg))
 
 def generate_name(args):
-    joined_n = ','.join(map(lambda x: str(x), args.n_validators))
-    joined_tps = ','.join(map(lambda x: str(x), args.tps))
+
+    joined_n = joined_arg(args.n_validators)
+    joined_tps = joined_arg(args.tps)
     joined_algos = ','.join(args.algos)
-    
+
     name = f'_{joined_algos}_n={joined_n}_tps={joined_tps}'
     if args.delay or args.jitter or args.rate:
         name += '_net='
     if args.delay:
-        name += f'd{args.delay}'
+        joined_delay = joined_arg(args.delay)
+        name += f'd{joined_delay}'
     if args.jitter:
-        name += f'j{args.jitter}'
+        joined_jitter = ','.join(args.jitter)
+        name += f'j{joined_jitter}'
     if args.rate:
-        name += f'r{args.rate}'
+        joined_rate = ','.join(args.rate)
+        name += f'r{joined_rate}'
     
     return name
 
@@ -38,6 +45,18 @@ if __name__ == "__main__":
         output_dir = generate_name(args)
     else:
         output_dir = str(args.output_dir)   
+
+    n_tests = (
+        len(args.n_validators) *
+        len(args.algos) *
+        len(args.tps)
+    )
+    if args.delay:
+        n_tests *= len(args.delay)
+    if args.rate:
+        n_tests *= len(args.rate)
+
+    print(f'Generating {n_tests} tests...')
 
     for n in args.n_validators:
         for algo in args.algos:
@@ -54,12 +73,16 @@ if __name__ == "__main__":
                     '--disable-query'
                 ]
                 if args.delay:
-                    x.extend(['-d', args.delay])
-                if args.jitter:
-                    x.extend(['-j', args.jitter])
-                if args.rate:
-                    x.extend(['-r', args.rate])
-                subprocess.run(x)
+                    for delay in args.delay:
+                        x_net = deepcopy(x)
+                        x_net.extend(['-d', str(delay)])
+                        subprocess.run(x_net)
+                elif args.rate:
+                    for rate in args.rate:
+                        x_net = deepcopy(x)
+                        x_net.extend(['-r', rate])
+                else:
+                    subprocess.run(x)
 
     # copy runner/fetcher scripts
     full_output_dir = Path('./generator') / output_dir

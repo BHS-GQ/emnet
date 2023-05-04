@@ -30,16 +30,30 @@ parser.add_argument('-i', '--ip', type=str, default='172.16.239.')
 parser.add_argument('--disable-query', action='store_true')
 args = parser.parse_args()
 
+def generate_name(args):
+    n_val_str = str(args.n_validators)
+    tps_str = str(args.tps)
 
-n_val_str = str(args.n_validators)
-tps_str = str(args.tps)
+    name = f'{args.consensus_algo}_n={n_val_str}_tps={tps_str}'
+    if args.delay or args.jitter or args.rate:
+        name += '_net='
+    if args.delay:
+        name += f'd{args.delay}'
+    if args.jitter:
+        name += f'j{args.jitter}'
+    if args.rate:
+        name += f'r{args.rate}'
+    
+    return name
+
+
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
-GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{n_val_str}')
-BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{n_val_str}')  # Only used by hotstuff
+GENESIS_DIR = Path(f'{FILE_DIR}/genesis/{args.consensus_algo}_{str(args.n_validators)}')
+BLS_KEY_DIR = Path(f'{FILE_DIR}/bls_keys/{str(args.n_validators)}')  # Only used by hotstuff
 TEMPLATE_DIR = Path(f'{FILE_DIR}/templates')
-GENERATED_DIR = Path(f'{FILE_DIR}/{args.output}')
+GENERATED_DIR = Path(f'{FILE_DIR}/{args.output}/')
 OUTPUT_DIR = Path(
-    f'{GENERATED_DIR}/{args.consensus_algo}_n={n_val_str}_tps={tps_str}'
+    f'{GENERATED_DIR}/{generate_name(args)}/'
 )
 
 
