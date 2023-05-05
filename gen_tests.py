@@ -81,6 +81,7 @@ if __name__ == "__main__":
                     for rate in args.rate:
                         x_net = deepcopy(x)
                         x_net.extend(['-r', rate])
+                        subprocess.run(x_net)
                 else:
                     subprocess.run(x)
 
