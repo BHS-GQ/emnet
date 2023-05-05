@@ -283,6 +283,11 @@ def edit_testconfig(args):
 
         testcfg['test']['rounds'].append(round)
 
+    # Set monitoring IP
+    monitoredIP = [f'http://{args.netip}:2375/validator{val_idx}' for val_idx in range(args.n_validators)]
+    monitoredIP.append(f'http://{args.netip}:2375/nginx')
+    testcfg['monitors']['resource'][0]['options']['containers'] = monitoredIP
+
     with open(testcfg_path, 'w') as f:
         yaml.dump(testcfg, f, default_flow_style=False)
 
