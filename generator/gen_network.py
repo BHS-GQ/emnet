@@ -107,6 +107,7 @@ def build_genesis(args, val_info: dict) -> list:
         ]
 
         block_period = 1
+        timeout = 5
         if args.consensus_algo == "hotstuff":
             # Hotstuff uses QBFT genesis
             if "qbft" in genesis["config"]:
@@ -116,7 +117,7 @@ def build_genesis(args, val_info: dict) -> list:
             genesis["config"]["isQuorum"] = True
 
             hotstuff_cfg = {
-                "requesttimeoutmilliseconds": 5000,  # Matches ibft, qbft default
+                "requesttimeoutmilliseconds": timeout * 1000,  # Matches ibft, qbft default
                 "blockperiodseconds": block_period,
                 "policy": "RoundRobin",
                 "faultymode": "Disabled",
@@ -129,9 +130,9 @@ def build_genesis(args, val_info: dict) -> list:
             genesis["config"]["hotstuff"] = hotstuff_cfg
         elif args.consensus_algo == "ibft":
             genesis["config"]["ibft"]["blockperiodseconds"] = block_period
-            genesis["config"]["ibft"]["requesttimeoutseconds"] = 5
+            genesis["config"]["ibft"]["requesttimeoutseconds"] = timeout
         elif args.consensus_algo == "qbft":
-            genesis["config"]["qbft"]["requesttimeoutseconds"] = 5
+            genesis["config"]["qbft"]["requesttimeoutseconds"] = timeout
             genesis["config"]["qbft"]["blockperiodseconds"] = block_period
 
     return genesis
