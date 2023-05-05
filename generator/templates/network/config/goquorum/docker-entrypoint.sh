@@ -54,7 +54,7 @@ fi
 exec geth \
 --datadir /data \
 --nodiscover \
---verbosity 5 \
+--verbosity 5 --log.json \
 $CONSENSUS_ARGS \
 --syncmode full --revertreason \
 --metrics --pprof --pprof.addr 0.0.0.0 --pprof.port 9545 \

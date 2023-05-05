@@ -19,7 +19,8 @@ def run_all():
         td_full = td_path.resolve()
         for idx in range(3): # todo: argparse
             logging.info(f"Starting {td_full} Run {idx + 1}...")
-            subprocess.run(['python3', 'test.py'], cwd=td_full)
+            # Timeout after 10 mins
+            subprocess.run(['python3', 'test.py'], cwd=td_full, timeout=float(60*10))
             time.sleep(5)
 
         _dotenv_path = td_path / '.env'
