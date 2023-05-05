@@ -19,15 +19,15 @@ TEST_DIR = args.target
 TEST_ID_COLS = ['Name', 'n', 'algo', 'tps_param', 'cpu_limit', 'delay', 'rate_limit']
 PLOT_DESIGNS = {
     'algo': {        
-        'hotstuff': {'color': 'tab:blue'},
-        'ibft': {'color': 'tab:green'},
-        'qbft': {'color': 'tab:orange'}
+        'hotstuff': {'color': 'tab:blue', 'marker': 'o', 'ls': 'solid'},
+        'ibft': {'color': 'tab:green', 'marker': 'x', 'ls': 'dashed'},
+        'qbft': {'color': 'tab:orange', 'marker': '^', 'ls': ':'}
     },
     'n': {
-        '4': {'marker': 'o', 'ls': 'solid'},
-        '8': {'marker': 'x', 'ls': 'dashed'},
-        '12': {'marker': '^', 'ls': ':'},
-        '16': {'marker': 's', 'ls': 'dashdot'}
+        4: {'marker': 'o', 'ls': 'solid'},
+        8: {'marker': 'x', 'ls': 'dashed'},
+        12: {'marker': '^', 'ls': ':'},
+        16: {'marker': 's', 'ls': 'dashdot'}
     }
 }
 
@@ -74,7 +74,17 @@ def compile_reports():
             'rate_limit': [],
             'r_idx': [],
         }
-
+        rate_limit_convert = {
+            '5mbit': 5,
+            '10mbit': 10,
+            '25mbit': 25,
+            '2500kbit': 2.5,
+            '5000kbit': 5,
+            '10000kbit': 10,
+            '15000kbit': 15,
+            '20000kbit': 20,
+            '25000kbit': 25,
+        }
         if len(tables) < 4:
             print('Failed open!')
         else:
@@ -101,7 +111,8 @@ def compile_reports():
             else:
                 new_cols['delay'].append(None)
             if 'PUMBA_RATE' in test_params:
-                new_cols['rate_limit'].append(test_params['PUMBA_RATE'])
+                rate_limit_converted = rate_limit_convert[test_params['PUMBA_RATE']]
+                new_cols['rate_limit'].append(rate_limit_converted)
             else:
                 new_cols['rate_limit'].append(None)
 
@@ -132,7 +143,8 @@ def compile_reports():
             else:
                 new_cols['delay'].append(None)
             if 'PUMBA_RATE' in test_params:
-                new_cols['rate_limit'].append(test_params['PUMBA_RATE'])
+                rate_limit_converted = rate_limit_convert[test_params['PUMBA_RATE']]
+                new_cols['rate_limit'].append(rate_limit_converted)
             else:
                 new_cols['rate_limit'].append(None)
 
@@ -166,9 +178,9 @@ def make_lineplot(
         fig, ax = plt.subplots(figsize=(10,8))
         for key, grp in _dft.groupby(groupby_cols):
             grp = grp.sort_values(by=[x_col])
-            color = PLOT_DESIGNS['algo'][key[0]]['color']
-            marker = PLOT_DESIGNS['n'][key[1]]['marker']
-            linestyle = PLOT_DESIGNS['n'][key[1]]['ls']
+            color = PLOT_DESIGNS[groupby_cols[0]][key[0]]['color']
+            marker = PLOT_DESIGNS[groupby_cols[0]][key[0]]['marker']
+            linestyle = PLOT_DESIGNS[groupby_cols[0]][key[0]]['ls']
 
             ax.plot(
                 grp[x_col],
@@ -177,7 +189,7 @@ def make_lineplot(
                 marker=marker,
                 linestyle=linestyle,
                 linewidth=1,
-                label=f"{key[0]}_{key[1]}"
+                label=f"{key[0]}"
             )
         ax.set_title(f'{x_label} vs. {y_label} of {transaction_type}')
         ax.set_xlabel(x_label)
@@ -266,50 +278,50 @@ def generate_plots(df):
 
     # throughput plots
     df_grouped = get_grouped_df(df)
-    make_lineplot_boxplot(
-        df_grouped,
-        ['algo', 'n'],
-        'tps_param',
-        'Send Rate (TPS)',
-        'tput',
-        'Avg. Throughput (TPS)',
-        'throughput',
-        ['open', 'transfer'],
-        plots_dir,
-    )
+    # make_lineplot_boxplot(
+    #     df_grouped,
+    #     ['algo', 'n'],
+    #     'tps_param',
+    #     'Send Rate (TPS)',
+    #     'tput',
+    #     'Avg. Throughput (TPS)',
+    #     'throughput',
+    #     ['open', 'transfer'],
+    #     plots_dir,
+    # )
 
-    # latency plots
-    make_lineplot(
-        df,
-        ['algo', 'n'],
-        'tps_param',
-        'Send Rate (TPS)',
-        'Avg Latency (s)',
-        'Avg. Latency (s)',
-        'latency',
-        ['open', 'transfer'],
-        plots_dir,
-    )
+    # # latency plots
+    # make_lineplot(
+    #     df,
+    #     ['algo', 'n'],
+    #     'tps_param',
+    #     'Send Rate (TPS)',
+    #     'Avg Latency (s)',
+    #     'Avg. Latency (s)',
+    #     'latency',
+    #     ['open', 'transfer'],
+    #     plots_dir,
+    # )
 
-    # metrics plots
+    # # metrics plots
+    # make_lineplot(
+    #     df,
+    #     ['algo', 'n'],
+    #     'tps_param',
+    #     'Send Rate (TPS)',
+    #     'neto_total_mb',
+    #     'Total Network Out (MB)',
+    #     'traffic_out',
+    #     ['open', 'transfer'],
+    #     plots_dir,
+    # )
     make_lineplot(
         df,
-        ['algo', 'n'],
-        'tps_param',
-        'Send Rate (TPS)',
-        'neto_total_mb',
-        'Total Network Out (MB)',
-        'traffic_out',
-        ['open', 'transfer'],
-        plots_dir,
-    )
-    make_lineplot(
-        df,
-        ['algo', 'n'],
-        'tps_param',
-        'Send Rate (TPS)',
+        ['algo'],
+        'n',
+        'N',
         'cpu%_max_all',
-        'Average Max. CPU%',
+        'Max. CPU%',
         'cpu_max_all',
         ['open', 'transfer'],
         plots_dir,
