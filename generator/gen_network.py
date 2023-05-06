@@ -134,6 +134,7 @@ def build_genesis(args, val_info: dict) -> list:
         elif args.consensus_algo == "qbft":
             genesis["config"]["qbft"]["requesttimeoutseconds"] = timeout
             genesis["config"]["qbft"]["blockperiodseconds"] = block_period
+            del(genesis["config"]["qbft"]["emptyblockperiodseconds"])
 
     return genesis
 
