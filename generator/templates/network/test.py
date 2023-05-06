@@ -97,7 +97,7 @@ def run_test():
                     print('All tc containers started. Running Caliper...')
                     break
 
-    time.sleep(20)
+    time.sleep(5)
 
     # Run Caliper
     full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
