@@ -71,7 +71,7 @@ def main():
     # Run Caliper
     full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
     subprocess.run([
-        'npx', 'caliper', 'launch', 'manager',
+        'node', '/home/ubuntu/caliper/packages/caliper-cli/caliper.js', 'launch', 'manager', # assumes you have a local git clone of caliper repo with checkout tag of v0.5.0 with proper fix to remote monitoring line bug: https://github.com/hyperledger/caliper/issues/1493
         '--caliper-workspace', full_caliper_ws_path,
         '--caliper-benchconfig', str(CALIPER_TEST_CFG),
         '--caliper-networkconfig', str(CALIPER_NET_CFG)
