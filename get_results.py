@@ -18,8 +18,8 @@ DATA_DIR = PWD / 'data'
 
 
 if __name__ == "__main__":
-    host = CONFIG['AWS_IP']
-    keyfile = CONFIG['AWS_PEM_FILE']
+    host = CONFIG['NET_PUB_IP']
+    keyfile = CONFIG['NET_PEM_FILE']
     username = 'ubuntu'
     
     client = paramiko.client.SSHClient()

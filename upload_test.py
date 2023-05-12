@@ -22,8 +22,8 @@ if __name__ == "__main__":
     tar_test = subprocess.run(['tar', '-czvf', TAR_FILE, args.target])
     logging.info(tar_test.args)
 
-    host = CONFIG['AWS_IP']
-    keyfile = CONFIG['AWS_PEM_FILE']
+    host = CONFIG['NET_PUB_IP']
+    keyfile = CONFIG['NET_PEM_FILE']
     username = 'ubuntu'
     
     client = paramiko.client.SSHClient()
@@ -35,8 +35,11 @@ if __name__ == "__main__":
     ftp_client.close()
 
     _stdin, _stdout,_stderr = client.exec_command(f'mkdir {args.target.name}')
+    exit_status = _stdout.channel.recv_exit_status()
     _stdin, _stdout,_stderr = client.exec_command(f'tar -xzvf {TAR_FILE} -C {args.target.name} --strip-components=2')
+    exit_status = _stdout.channel.recv_exit_status()
     _stdin, _stdout,_stderr = client.exec_command(f'rm -f {TAR_FILE}')
+    exit_status = _stdout.channel.recv_exit_status()
     _stdin.close()
 
     client.close()

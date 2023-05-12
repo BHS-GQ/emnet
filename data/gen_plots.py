@@ -98,7 +98,7 @@ def make_lineplot(
                     showmeans=False,
                     patch_artist=True,
                     boxprops=dict(facecolor=color, alpha=0.5),
-                    # widths=[3] * len(grp[x_col].values),
+                    widths=[500] * len(grp[x_col].values),
                     zorder=1
                 )
 
