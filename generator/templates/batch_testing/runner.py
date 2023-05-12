@@ -23,12 +23,13 @@ def run_all():
             subprocess.run(['python3', 'test.py'], cwd=td_full, timeout=float(60*10))
             time.sleep(5)
 
-        _dotenv_path = td_path / '.env'
-        _dotenv = dotenv_values(str(_dotenv_path.resolve()))
-        if prev_consensus != _dotenv['CONSENSUS_ALGO']:
-            subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
+        subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
+        # _dotenv_path = td_path / '.env'
+        # _dotenv = dotenv_values(str(_dotenv_path.resolve()))
+        # if prev_consensus != _dotenv['CONSENSUS_ALGO']:
+        #     subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
 
-        prev_consensus = _dotenv['CONSENSUS_ALGO']        
+        # prev_consensus = _dotenv['CONSENSUS_ALGO']        
 
 
 if __name__ == "__main__":

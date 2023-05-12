@@ -242,6 +242,11 @@ def edit_docker_compose(args, val_info: dict):
         val['volumes'][0] = validator_keys_volume
         val['container_name'] = validator_name
         val['deploy']['resources']['limits']['cpus'] = args.cpu
+        # val['labels'] = [
+        #     f'com.docker-tc.enabled=1',
+        #     f'com.docker-tc.limit={args.rate}',
+        #     # f'com.docker-tc.delay=20ms',
+        # ]
 
         dc['services'][validator_name] = val
 

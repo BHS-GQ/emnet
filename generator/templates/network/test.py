@@ -45,7 +45,8 @@ def run_test():
     run_path = PWD / 'run.sh'
     subprocess.run([str(run_path.resolve())])
 
-    time.sleep(5)
+    time.sleep(15) # change this for delay tests
+
     # Run pumba netem
     delay_flag, rate_flag = False, False
     if 'PUMBA_DELAY' in CONFIG:
@@ -69,7 +70,8 @@ def run_test():
             '--duration', '1h',
             'rate',
             '-r', CONFIG['PUMBA_RATE'],
-            're2:validator.'
+            're2:validator.',
+            # 're2:(validator.|nginx)',
         ]
         rate_flag = True
     
@@ -97,7 +99,7 @@ def run_test():
                     print('All tc containers started. Running Caliper...')
                     break
 
-    time.sleep(5)
+    time.sleep(15)
 
     # Run Caliper
     full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
