@@ -11,7 +11,7 @@ from dotenv import dotenv_values
 PWD = Path(__file__).parent
 
 def run_all():
-    prev_consensus = ''
+    prev_consensus = ()
     test_dirs = glob('./*/')
     test_dirs.sort()
     for test_dir in test_dirs:
@@ -23,14 +23,13 @@ def run_all():
             subprocess.run(['python3', 'test.py'], cwd=td_full, timeout=float(60*10))
             time.sleep(5)
 
-        subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
-        # _dotenv_path = td_path / '.env'
-        # _dotenv = dotenv_values(str(_dotenv_path.resolve()))
-        # if prev_consensus != _dotenv['CONSENSUS_ALGO']:
-        #     subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
+        _dotenv_path = td_path / '.env'
+        _dotenv = dotenv_values(str(_dotenv_path.resolve()))
+        ca_id = (_dotenv['CONSENSUS_ALGO'], _dotenv['N_VALIDATORS'])
+        if prev_consensus != ca_id :
+            subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
 
-        # prev_consensus = _dotenv['CONSENSUS_ALGO']        
-
+        prev_consensus = ca_id
 
 if __name__ == "__main__":
     try:
