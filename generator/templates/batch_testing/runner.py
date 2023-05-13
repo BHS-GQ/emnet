@@ -17,7 +17,7 @@ def run_all():
     for test_dir in test_dirs:
         td_path = Path(test_dir)
         td_full = td_path.resolve()
-        for idx in range(3): # todo: argparse
+        for idx in range(5): # todo: argparse
             logging.info(f"Starting {td_full} Run {idx + 1}...")
             # Timeout after 10 mins
             subprocess.run(['python3', 'test.py'], cwd=td_full, timeout=float(60*10))
