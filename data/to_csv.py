@@ -20,13 +20,14 @@ args = parser.parse_args()
 def parse_rate_limit(rlim: str) -> int:
     if 'mbit' in rlim:
         num = int(rlim.split('mbit')[0])
-        kbits = num * 1e3
+        mbits = num
     elif 'kbit' in rlim:
-        kbits = int(rlim.split('kbit')[0])
+        num = int(rlim.split('kbit')[0])
+        mbits = num / 1000
     elif 'gbit' in rlim:
         num = int(rlim.split('gbit')[0])
-        kbits = num * 1e6
-    return kbits
+        mbits = num * 1e3
+    return mbits
 
 
 def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int):

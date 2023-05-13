@@ -232,7 +232,7 @@ def edit_docker_compose(args, val_info: dict):
     nginx_svc = deepcopy(NGINX_TEMPLATE)
     _ip = args.ip + '5'
     nginx_svc['networks']['gq-net']['ipv4_address'] = _ip
-    for val_idx in range(0, 4):
+    for val_idx in range(args.n_validators):
         validator_name = f"validator{val_idx}"
         nginx_svc['depends_on'][validator_name] = {"condition": "service_healthy"}
     dc['services']['nginx'] = nginx_svc
@@ -277,8 +277,8 @@ def edit_testconfig(args):
         except yaml.YAMLError as exc:
             print(exc)
 
-    testcfg['test']['workers']['number'] = 4
-    
+    testcfg['test']['workers']['number'] = min(args.n_validators, 8)
+
     # Clear rounds
     testcfg['test']['rounds'] = []
 
@@ -337,7 +337,7 @@ def create_loadbalancer(val_info):
     root.add(_map)
 
     upstream = nginx.Upstream('websocket')
-    for idx in range(0, 4):
+    for idx in range(min(args.n_validators, 8)):
         ip = val_info[idx]['ip']
         
         upstream.add(
