@@ -10,11 +10,16 @@ from pathlib import Path
 from glob import glob
 from distutils.dir_util import copy_tree
 from copy import deepcopy
+from dotenv import dotenv_values
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from generator.cfg_templates import *
+
+PWD = Path(__file__).parent
+dotenv_path = PWD / '../' / '.env'
+_dotenv = dotenv_values(str(dotenv_path.resolve()))
 
 
 parser = argparse.ArgumentParser()
@@ -188,6 +193,9 @@ def create_dotenv(args):
         f.write(f"N_VALIDATORS={args.n_validators}\n")
         f.write(f"TPS={args.tps}\n")
         f.write(f"CPU_LIMIT={args.cpu}\n")
+        f.write(f"NET_IP={_dotenv['NET_IP']}\n")
+        f.write(f"CAL_IP={_dotenv['CAL_IP']}\n")
+        f.write(f"NET_PEM_FILE={_dotenv['NET_PEM_FILE']}\n")
         if args.delay:
             f.write(f"PUMBA_DELAY={args.delay}\n")
         if args.jitter:
@@ -224,7 +232,7 @@ def edit_docker_compose(args, val_info: dict):
     nginx_svc = deepcopy(NGINX_TEMPLATE)
     _ip = args.ip + '5'
     nginx_svc['networks']['gq-net']['ipv4_address'] = _ip
-    for val_idx in range(0, 4):
+    for val_idx in range(args.n_validators):
         validator_name = f"validator{val_idx}"
         nginx_svc['depends_on'][validator_name] = {"condition": "service_healthy"}
     dc['services']['nginx'] = nginx_svc
@@ -269,8 +277,8 @@ def edit_testconfig(args):
         except yaml.YAMLError as exc:
             print(exc)
 
-    testcfg['test']['workers']['number'] = 4
-    
+    testcfg['test']['workers']['number'] = min(args.n_validators, 8)
+
     # Clear rounds
     testcfg['test']['rounds'] = []
 
@@ -290,6 +298,14 @@ def edit_testconfig(args):
         round['workload']['module'] = f'benchmarks/scenario/simple/{txn_type}.js'
 
         testcfg['test']['rounds'].append(round)
+    
+    # Caliper monitoring
+    monitored_ips = []
+    for val_idx in range(args.n_validators):
+        monitored_ips.append(
+            f'http://{_dotenv["NET_IP"]}:2375/validator{val_idx}'
+        )
+    testcfg['monitors']['resource'][0]['options']['containers'] = monitored_ips
 
     with open(testcfg_path, 'w') as f:
         yaml.dump(testcfg, f, default_flow_style=False)
@@ -299,7 +315,8 @@ def edit_networkconfig(val_info):
     with open(net_cfg_path, 'r', encoding='utf-8') as f:
         net_cfg = json.load(f)
 
-    # Nothing happens yet
+    # Set url to net machine local ip
+    net_cfg['ethereum']['url'] = f'ws://{_dotenv["NET_IP"]}:8080'
 
     with open(net_cfg_path, 'w', encoding='utf-8') as f:
         json.dump(net_cfg, f, indent=4, sort_keys=True)
@@ -320,7 +337,7 @@ def create_loadbalancer(val_info):
     root.add(_map)
 
     upstream = nginx.Upstream('websocket')
-    for idx in range(0, 4):
+    for idx in range(min(args.n_validators, 8)):
         ip = val_info[idx]['ip']
         
         upstream.add(

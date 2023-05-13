@@ -6,6 +6,7 @@ import argparse
 import json
 import traceback
 import re
+import paramiko
 
 from glob import glob
 from pathlib import Path
@@ -45,7 +46,7 @@ def run_test():
     run_path = PWD / 'run.sh'
     subprocess.run([str(run_path.resolve())])
 
-    time.sleep(15) # change this for delay tests
+    time.sleep(5) # change this for delay tests
 
     # Run pumba netem
     delay_flag, rate_flag = False, False
@@ -99,17 +100,32 @@ def run_test():
                     print('All tc containers started. Running Caliper...')
                     break
 
+
+    ssh_client = paramiko.SSHClient()
+    k = paramiko.RSAKey.from_private_key_file(CONFIG['NET_PEM_FILE'])
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.connect(CONFIG['CAL_IP'], username="ubuntu", pkey=k)
+
+    # Pass network files
+    sftp = ssh_client.open_sftp()
+    sftp.put(f"./networkconfig.json", f'/home/ubuntu/networkconfig.json')
+    sftp.put(f"./testconfig.yaml", f'/home/ubuntu/testconfig.yaml')
+    sftp.close()
+
     time.sleep(15)
 
     # Run Caliper
-    full_caliper_ws_path = str(CALIPER_WORKSPACE_PATH.expanduser())
-    subprocess.run([
-        'npx', 'caliper', 'launch', 'manager',
-        '--caliper-workspace', full_caliper_ws_path,
-        '--caliper-benchconfig', str(CALIPER_TEST_CFG),
-        '--caliper-networkconfig', str(CALIPER_NET_CFG)
-    ],
-    cwd=full_caliper_ws_path)
+    #   assumes you have a local git clone of caliper repo with checkout tag of v0.5.0 
+    #   with proper fix to remote monitoring line bug: https://github.com/hyperledger/caliper/issues/1493
+    caliper_cmd = ' '.join([
+        'cd caliper-benchmarks;',
+        'node', '/home/ubuntu/caliper/packages/caliper-cli/caliper.js', 'launch', 'manager',
+        '--caliper-workspace', '/home/ubuntu/caliper-benchmarks',
+        '--caliper-benchconfig', '/home/ubuntu/testconfig.yaml',
+        '--caliper-networkconfig', '/home/ubuntu/networkconfig.json',
+    ])
+    _stdin, _stdout, _stderr = ssh_client.exec_command(caliper_cmd)
+    exit_status = _stdout.channel.recv_exit_status()
 
     # Shutdown everything
     if pumba_flag:
@@ -119,6 +135,17 @@ def run_test():
 
     remove_path = PWD / 'remove.sh'
     subprocess.run([str(remove_path.resolve())])
+
+    # Get report
+    #   todo: logs
+    _stdin, _stdout,_stderr = ssh_client.exec_command('rm /home/ubuntu/testconfig.yaml /home/ubuntu/networkconfig.json')
+    exit_status = _stdout.channel.recv_exit_status()
+    target_path = RESULTS_DIR / 'report.html'
+    sftp = ssh_client.open_sftp()
+    sftp.get('/home/ubuntu/caliper-benchmarks/report.html', str(target_path.expanduser()))
+    sftp.close()
+    ssh_client.close()
+
 
 def main():
     if not os.path.exists(RESULTS_DIR):
@@ -132,16 +159,6 @@ def main():
     end = time.time()
     elapsed = end - start
     CONFIG['TIME_TAKEN'] = elapsed
-
-    # Get report and logs
-    report_path = CALIPER_WORKSPACE_PATH / 'report.html'
-    target_path = RESULTS_DIR / 'report.html'
-    subprocess.run(['mv', str(report_path.expanduser()), str(target_path.expanduser())])
-
-    if args.logs:
-        logs_dir = PWD / 'logs' / 'quorum'
-        output_path = RESULTS_DIR / 'logs.tar.gz'
-        subprocess.run(['tar', '-czvf', str(output_path.expanduser()), str(logs_dir.expanduser())])
     
     # Write test params
     params_file = RESULTS_DIR / 'params.json'
