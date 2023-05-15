@@ -64,6 +64,7 @@ def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int
 def compile_reports():
     dfs = []
     result_dirs = glob(f'{str(args.target.resolve())}/*/report_*/')
+    print(args.target.resolve())
     for result_dir in result_dirs:
         print(f'Processing {result_dir}...')
         rd_path = Path(result_dir)

@@ -34,9 +34,9 @@ PLOT_KWARGS = {
             'y_col': 'tput_mean',
             'y_label': 'Throughput (TPS)',
             'y_range': [0, 400],
-            'transaction_types': ['open', 'transfer'],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
-            'boxplot': True
+            # 'boxplot': True
         },
         'latency': {
             'groupby_cols': ['algo', 'tps_param'],
@@ -44,10 +44,10 @@ PLOT_KWARGS = {
             'x_label': '# of Validators',
             'y_col': 'lat_mean',
             'y_label': 'Latency (ms)',
-            'y_range': [1, 3],
-            'transaction_types': ['open', 'transfer'],
+            # 'y_range': [1, 3],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
-            'boxplot': True
+            # 'boxplot': True
         },
         'neto': {
             'groupby_cols': ['algo', 'tps_param'],
@@ -55,7 +55,7 @@ PLOT_KWARGS = {
             'x_label': '# of Validators',
             'y_col': 'neto_mean',
             'y_label': 'Network Out (MB)',
-            'transaction_types': ['open', 'transfer'],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
         },
         'cpu': {
@@ -64,22 +64,22 @@ PLOT_KWARGS = {
             'x_label': '# of Validators',
             'y_col': 'cpu_max_avg',
             'y_label': 'Max. CPU Usage (% of total)',
-            'transaction_types': ['open', 'transfer'],
+            'y_range': [1.00, 1.5],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
         },
     },
     'rate_limit': {
         'tput': {
             'groupby_cols': ['algo', 'n', 'tps_param'],
-
             'x_col': 'rate_limit',
             'x_label': 'Rate Limit (mbit/s)',
             'y_col': 'tput_mean',
             'y_label': 'Throughput (TPS)',
-            'y_range': [0, 400],
-            'transaction_types': ['open', 'transfer'],
+            'y_range': [0, 200],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
-            'boxplot': True,
+            # 'boxplot': True,
         },
         'latency': {
             'groupby_cols': ['algo', 'n', 'tps_param'],
@@ -88,7 +88,7 @@ PLOT_KWARGS = {
             'x_label': 'Rate Limit (mbit/s)',
             'y_col': 'lat_mean',
             'y_label': 'Latency (ms)',
-            'transaction_types': ['open', 'transfer'],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
         },
         'neto': {
@@ -98,7 +98,7 @@ PLOT_KWARGS = {
             'x_label': 'Rate Limit (mbit/s)',
             'y_col': 'neto_mean',
             'y_label': 'Network Out (MB)',
-            'transaction_types': ['open', 'transfer'],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
         },
         'cpu': {
@@ -108,7 +108,52 @@ PLOT_KWARGS = {
             'x_label': 'Rate Limit (mbit/s)',
             'y_col': 'cpu_max_avg',
             'y_label': 'Max. CPU Usage (% of total)',
-            'transaction_types': ['open', 'transfer'],
+            # 'transaction_types': ['open', 'transfer'],
+            'img_fname': 'rate',
+        },
+    },
+    'send_rate': {
+        'tput': {
+            'groupby_cols': ['algo', 'n'],
+            'x_col': 'tps_param',
+            'x_label': 'Send Rate (TPS)',
+            'y_col': 'tput_mean',
+            'y_label': 'Throughput (TPS)',
+            'y_range': [0, 400],
+            # 'transaction_types': ['open', 'transfer'],
+            'img_fname': 'rate',
+            # 'boxplot': True,
+        },
+        'latency': {
+            'groupby_cols': ['algo', 'n'],
+
+            'x_col': 'tps_param',
+            'x_label': 'Send Rate (TPS)',
+            'y_col': 'lat_mean',
+            'y_label': 'Latency (ms)',
+            # 'transaction_types': ['open', 'transfer'],
+            'img_fname': 'rate',
+        },
+        # No neto: tests last longer depending on send rate
+        'neto': {
+            'groupby_cols': ['algo', 'n'],
+
+            'x_col': 'tps_param',
+            'x_label': 'Send Rate (TPS)',
+            'y_col': 'neto_mean',
+            'y_label': 'Network Out (MB)',
+            # 'transaction_types': ['open', 'transfer'],
+            'img_fname': 'rate',
+        },
+        'cpu': {
+            'groupby_cols': ['algo', 'n'],
+
+            'x_col': 'tps_param',
+            'x_label': 'Send Rate (TPS)',
+            'y_col': 'cpu_max_avg',
+            'y_label': 'Max. CPU Usage (% of total)',
+            'y_range': [0.00, 2.75],
+            # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
         },
     }

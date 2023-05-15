@@ -43,75 +43,66 @@ def make_lineplot(
     df: pd.DataFrame,
     groupby_cols: list,
 
+    ax,
     x_col: str,
     x_label: str,
     y_col: str,
     y_label: str,
 
-    transaction_types: list,
+    transaction_type: str,
     img_fname: str,
 
     x_range: list = None,
     y_range: list = None,
 
     boxplot: bool = False,
-
 ):
     _df = df.copy()
-    for transaction_type in transaction_types:
-        _dft = _df.loc[_df['Name'] == transaction_type]
+    _dft = _df.loc[_df['Name'] == transaction_type]
 
-        fig, ax = plt.subplots(figsize=(5,5))
-        main_grp = groupby_cols[0]
-        for key, grp in _dft.groupby(groupby_cols):
-            grp = grp.sort_values(by=[x_col])
-            main_key = key[0]
+    main_grp = groupby_cols[0]
+    for key, grp in _dft.groupby(groupby_cols):
+        grp = grp.sort_values(by=[x_col])
+        main_key = key[0]
 
-            color = PLOT_DESIGNS[main_grp][main_key]['color']
-            marker = PLOT_DESIGNS[main_grp][main_key]['marker']
-            linestyle = PLOT_DESIGNS[main_grp][main_key]['ls']
+        color = PLOT_DESIGNS[main_grp][main_key]['color']
+        marker = PLOT_DESIGNS[main_grp][main_key]['marker']
+        linestyle = PLOT_DESIGNS[main_grp][main_key]['ls']
 
-            if y_range:
-                ax.set_ylim(y_range)
+        if y_range:
+            ax.set_ylim(y_range)
 
-            ax.plot(
-                grp[x_col],
-                grp[y_col],
-                color=color,
-                marker=marker,
-                linestyle=linestyle,
-                linewidth=1,
-                markerfacecolor='none',
-                label=f"{key[0]}"
+        ax.plot(
+            grp[x_col],
+            grp[y_col],
+            color=color,
+            marker=marker,
+            linestyle=linestyle,
+            linewidth=1,
+            markerfacecolor='none',
+            label=f"{key[0]}"
+        )
+
+        if boxplot:
+            if '_mean' not in y_col:
+                raise Exception(f'Cannot generate boxplot from {y_col}')
+            y_col_all = f'{y_col.split("_")[0]}_all'
+            ax.boxplot(
+                grp[y_col_all],
+                positions=grp[x_col].values,
+                sym='k+',
+                showfliers=False,
+                showmeans=False,
+                patch_artist=True,
+                boxprops=dict(facecolor=color, alpha=0.5),
+                zorder=1
             )
 
-            if boxplot:
-                if '_mean' not in y_col:
-                    raise Exception(f'Cannot generate boxplot from {y_col}')
-                y_col_all = f'{y_col.split("_")[0]}_all'
-                print(grp[x_col].values)
-                ax.boxplot(
-                    grp[y_col_all],
-                    positions=grp[x_col].values,
-                    sym='k+',
-                    showfliers=False,
-                    showmeans=False,
-                    patch_artist=True,
-                    boxprops=dict(facecolor=color, alpha=0.5),
-                    zorder=1
-                )
-
-        ax.set_title(f'{x_label} vs. {y_label} of {transaction_type}')
-        
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-
-        ax.legend()
-        img_path = PLOTS_DIR / f'{transaction_type}-{img_fname}-{x_col}-{y_col}.png'
-        plt.savefig(img_path)
-
-        # plt.show()
-
+    ax.set_title(f'{x_label} vs. {y_label} of {transaction_type}')
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.title.set_size(11)
+    ax.legend()
 
 if __name__ == "__main__":
     df_raw = pd.read_csv(args.target / CSV_NAME)
@@ -119,6 +110,16 @@ if __name__ == "__main__":
     df = df[df['tput_all'].map(len) >= 2]
     df['cpu_max_avg'] = df['cpu_max_avg'].div(100)
 
-    for _, kwargs in PLOT_KWARGS[args.test_kind].items():
-        kwargs['df'] = df
-        make_lineplot(**kwargs)
+    for ttype in ['open', 'transfer']:
+        fig, ax = plt.subplots(2, 2, figsize=(10, 10))
+        idx = 0
+        ijcombs = [(0,0), (0,1), (1,0), (1,1)]
+        for key, kwargs in PLOT_KWARGS[args.test_kind].items():
+            print(f'Processing {args.test_kind} {ttype} {key}')
+            kwargs['df'] = df
+            i, j =ijcombs[idx]
+            make_lineplot(ax=ax[i, j], transaction_type=ttype, **kwargs)
+            idx += 1
+
+        img_path = PLOTS_DIR / f'{ttype}.png'
+        plt.savefig(img_path, bbox_inches='tight')
