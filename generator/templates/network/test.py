@@ -124,7 +124,17 @@ def run_test():
         '--caliper-benchconfig', '/home/ubuntu/testconfig.yaml',
         '--caliper-networkconfig', '/home/ubuntu/networkconfig.json',
     ])
-    _stdin, _stdout, _stderr = ssh_client.exec_command(caliper_cmd)
+    _stdin, _stdout, _stderr = ssh_client.exec_command(caliper_cmd, get_pty=True)
+
+    # Print to file caliper logs
+
+    i = 0
+    while os.path.exists("caliper%s.log" % i):
+        i += 1
+    with open("caliper%s.log" % i, "a") as logfile:
+        for line in iter(_stdout.readline, ""):                     
+            logfile.write(line)
+
     exit_status = _stdout.channel.recv_exit_status()
 
     # Shutdown everything

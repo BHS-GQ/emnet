@@ -52,3 +52,49 @@ monitors:
       interval: 1
       containers:
       - all
+    # Configurations related to the logging mechanism
+logging:
+    # Specifies the message structure through placeholders
+    template: '%timestamp%%level%%label%%module%%message%%metadata%'
+    # Enables the different formats to apply to the log messages FOR ALL transports
+    # Each format can be disabled by setting it to false
+    formats:
+        # Adds a timestamp to the messages with the following format
+        timestamp: 'YYYY.MM.DD-HH:mm:ss.SSS'
+        # Adds a specified label to every message. Useful for distributed workers scenario
+        label: caliper
+        # serializes the log messages as JSON
+        json: false
+        # pads the levels to be the same length
+        pad: true
+        # adds a tab delimiter before the message to align it in the same place
+        align: true
+        # specifies formatting strings for different log message attributes
+        attributeformat:
+            # add a space before the level
+            level: ' %attribute%'
+            # put [] around the label and space before it
+            label: ' [%attribute%]'
+            # put [] around the module name and space before/after it
+            module: ' [%attribute%] '
+            # put () around the metadata and space before it
+            metadata: ' (%attribute%)'
+        # defines coloring for the different levels for each (or all) message property
+        colorize:
+            # Apply it to levels
+            level: true
+            # Apply it to messages
+            message: false
+            # The colors for each level
+            colors:
+                info: green
+                error: red
+                warn: yellow
+                debug: grey
+    # Lists the targets (winston transports)
+    targets:
+        console:
+            target: console # Defines a console target
+            enabled: true # Enables the target
+            options: # These are passed to the winston console target as-is
+                level: info
