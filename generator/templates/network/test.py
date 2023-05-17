@@ -39,7 +39,6 @@ else:
     RESULTS_DIR = PWD / f'report_{max_report_idx + 1}'
 
 pumba_proc = None
-pumba_log = open('pumba.log', 'w')
 
 def run_test():
     # Start network
@@ -131,13 +130,11 @@ def run_test():
     if pumba_flag:
         pumba_proc.terminate()
         pumba_proc.wait()
-        pumba_log.close()
 
     remove_path = PWD / 'remove.sh'
     subprocess.run([str(remove_path.resolve())])
 
     # Get report
-    #   todo: logs
     _stdin, _stdout,_stderr = ssh_client.exec_command('rm /home/ubuntu/testconfig.yaml /home/ubuntu/networkconfig.json')
     exit_status = _stdout.channel.recv_exit_status()
     target_path = RESULTS_DIR / 'report.html'
@@ -145,6 +142,11 @@ def run_test():
     sftp.get('/home/ubuntu/caliper-benchmarks/report.html', str(target_path.expanduser()))
     sftp.close()
     ssh_client.close()
+
+    # Zip logs
+    logstar = RESULTS_DIR / 'logs.tar.gz'
+    cmd = f'tar -czvf {logstar} logs/quorum'.split(' ')
+    subprocess.run(cmd)
 
 
 def main():
@@ -174,5 +176,4 @@ if __name__ == "__main__":
         if pumba_proc is not None:
             pumba_proc.terminate()
             pumba_proc.wait()
-            pumba_log.close()
         subprocess.run(['./remove.sh'])

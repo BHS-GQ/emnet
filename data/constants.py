@@ -76,7 +76,7 @@ PLOT_KWARGS = {
             'x_label': 'Rate Limit (mbit/s)',
             'y_col': 'tput_mean',
             'y_label': 'Throughput (TPS)',
-            'y_range': [0, 200],
+            'y_range': [0, 400],
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
             # 'boxplot': True,

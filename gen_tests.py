@@ -69,8 +69,7 @@ if __name__ == "__main__":
                     '-t', str(tps),
                     '-n', str(n),
                     '--cpu', args.cpu_limit,
-                    '--ip', '172.16.239.',
-                    '--disable-query'
+                    '--ip', '172.16.239.'
                 ]
                 if args.delay:
                     for delay in args.delay:
