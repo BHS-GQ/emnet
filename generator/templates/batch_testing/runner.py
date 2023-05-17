@@ -33,7 +33,7 @@ def run_all():
             total_tests += 1
             # Timeout after 10 mins
             subprocess.run(['python3', 'test.py'], cwd=td_full, timeout=float(60*10))
-            time.sleep(5)
+            time.sleep(1)
 
         prev_consensus = ca_id
     print(total_tests)

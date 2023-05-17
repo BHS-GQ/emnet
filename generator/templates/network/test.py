@@ -11,6 +11,7 @@ import paramiko
 from glob import glob
 from pathlib import Path
 from dotenv import dotenv_values
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', type=Path)
@@ -157,9 +158,11 @@ def main():
 
     # Run test proper and time it    
     start = time.time()
+    CONFIG['TIME_START'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     run_test()
     end = time.time()
     elapsed = end - start
+    CONFIG['TIME_END'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     CONFIG['TIME_TAKEN'] = elapsed
     
     # Write test params
