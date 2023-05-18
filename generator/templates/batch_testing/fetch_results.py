@@ -7,6 +7,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', type=Path, required=True)
+parser.add_argument('-l', '--logs', action='store_true')
 args = parser.parse_args()
 
 PWD = Path(__file__).parent
@@ -22,5 +23,7 @@ if __name__ == "__main__":
 
     report_dirs = glob('./*/report_*')
     for report_dir in report_dirs:
-        x = ['cp', '--parents', '-r', report_dir, ALL_RESULTS_DIR]
+        x = ['rsync', '-aRv', report_dir, ALL_RESULTS_DIR]
+        if args.logs:
+            x.append('--exclude=logs.tar.gz')
         subprocess.run(x)

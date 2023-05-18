@@ -14,14 +14,7 @@ PLOT_DESIGNS = {
     }
 }
 
-COLS_TO_NUMERIC = [
-    'CPU%(avg)',
-    'CPU%(max)',
-    'Traffic In [MB]',
-    'Traffic Out [MB]',
-]
-
-ALL_TXN_TYPES = ['open', 'transfer']
+ALL_TXN_TYPES = ['open', 'query', 'transfer']
 
 CSV_NAME = 'compiled.csv'
 

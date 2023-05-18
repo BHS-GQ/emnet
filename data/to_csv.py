@@ -31,7 +31,24 @@ def parse_rate_limit(rlim: str) -> int:
 
 
 def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int):
-    df[COLS_TO_NUMERIC] = df[COLS_TO_NUMERIC].apply(pd.to_numeric, errors='coerce', axis=1)
+    if 'Traffic In [MB]' in df.columns:
+        cols_to_numeric = [
+            'CPU%(avg)',
+            'CPU%(max)',
+            'Traffic In [MB]',
+            'Traffic Out [MB]',
+        ]
+        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
+    elif 'Traffic In [KB]' in df.columns:
+        cols_to_numeric = [
+            'CPU%(avg)',
+            'CPU%(max)',
+            'Traffic In [KB]',
+            'Traffic Out [KB]',
+        ]
+        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
+        df['Traffic In [MB]'] = df['Traffic In [KB]'] / 1000
+        df['Traffic Out [MB]'] = df['Traffic Out [KB]'] / 1000
 
     new_cols['cpu_max_all'].append(df['CPU%(max)'].max())
     new_cols['cpu_max_avg_all'].append(df['CPU%(avg)'].max())
@@ -119,8 +136,11 @@ def compile_reports():
         if 'open' in successful_txn_types:
             df_open_perf = pd.read_html(str(tables[3]))[0]
             get_new_cols(df_open_perf, new_cols, test_params, result_idx)
-        if 'transfer' in successful_txn_types:
+        if 'query' in successful_txn_types:
             df_trans_perf = pd.read_html(str(tables[6]))[0]
+            get_new_cols(df_trans_perf, new_cols, test_params, result_idx)
+        if 'transfer' in successful_txn_types:
+            df_trans_perf = pd.read_html(str(tables[9]))[0]
             get_new_cols(df_trans_perf, new_cols, test_params, result_idx)
 
         for key, value in new_cols.items():

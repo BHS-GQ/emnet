@@ -110,7 +110,7 @@ if __name__ == "__main__":
     df = df[df['tput_all'].map(len) >= 2]
     df['cpu_max_avg'] = df['cpu_max_avg'].div(100)
 
-    for ttype in ['open', 'transfer']:
+    for ttype in ['open', 'query', 'transfer']:
         fig, ax = plt.subplots(2, 2, figsize=(10, 10))
         idx = 0
         ijcombs = [(0,0), (0,1), (1,0), (1,1)]
