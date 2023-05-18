@@ -209,11 +209,6 @@ def edit_dockerfile(args):
     with open(df_path, 'r') as f:
         df_text = f.readlines()
 
-    if args.consensus_algo == 'hotstuff':
-        df_text[2] = 'FROM --platform=linux/amd64 derick/hs:0.0.0\n'
-    else:
-        df_text[2] = 'FROM --platform=linux/amd64 quorumengineering/quorum:22.7.4\n'
-
     with open(df_path, 'w') as f:
         f.writelines(df_text)
 

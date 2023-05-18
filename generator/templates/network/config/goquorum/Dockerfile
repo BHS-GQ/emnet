@@ -1,6 +1,6 @@
 ARG QUORUM_VERSION=latest
 
-FROM --platform=linux/amd64 derick/hs:0.0.0
+FROM --platform=linux/amd64 wowells/quorumbhs:0.0.0
 
 RUN apk add --no-cache curl
 
