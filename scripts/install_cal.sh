@@ -18,5 +18,7 @@ git clone -b v5 --single-branch https://github.com/ndsg-eth1/caliper.git
 git clone https://github.com/hyperledger/caliper-benchmarks
 (
     cd ~/caliper-benchmarks &&
+    npm init -y &&
+    npm install --only=prod @hyperledger/caliper-cli@0.5.0 &&
     node /home/ubuntu/caliper/packages/caliper-cli/caliper.js bind --caliper-bind-sut ethereum:1.3
 )

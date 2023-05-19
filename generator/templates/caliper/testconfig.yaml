@@ -49,6 +49,6 @@ monitors:
   resource:
   - module: docker
     options:
-      interval: 1
+      interval: 0.5
       containers:
       - all

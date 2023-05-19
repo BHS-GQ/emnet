@@ -31,24 +31,18 @@ def parse_rate_limit(rlim: str) -> int:
 
 
 def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int):
-    if 'Traffic In [MB]' in df.columns:
-        cols_to_numeric = [
-            'CPU%(avg)',
-            'CPU%(max)',
-            'Traffic In [MB]',
-            'Traffic Out [MB]',
-        ]
-        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
-    elif 'Traffic In [KB]' in df.columns:
-        cols_to_numeric = [
-            'CPU%(avg)',
-            'CPU%(max)',
-            'Traffic In [KB]',
-            'Traffic Out [KB]',
-        ]
-        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
+    cols_to_numeric = [
+        'CPU%(avg)',
+        'CPU%(max)',
+        'Traffic In [MB]',
+        'Traffic Out [MB]'
+    ]
+    if 'Traffic In [KB]' in df.columns:
         df['Traffic In [MB]'] = df['Traffic In [KB]'] / 1000
+    if 'Traffic Out [KB]' in df.columns:
         df['Traffic Out [MB]'] = df['Traffic Out [KB]'] / 1000
+
+    df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
 
     new_cols['cpu_max_all'].append(df['CPU%(max)'].max())
     new_cols['cpu_max_avg_all'].append(df['CPU%(avg)'].max())

@@ -29,7 +29,7 @@ PLOT_KWARGS = {
             'y_range': [0, 400],
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
-            # 'boxplot': True
+            'boxplot': True
         },
         'latency': {
             'groupby_cols': ['algo', 'tps_param'],
@@ -40,7 +40,7 @@ PLOT_KWARGS = {
             # 'y_range': [1, 3],
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
-            # 'boxplot': True
+            'boxplot': True
         },
         'neto': {
             'groupby_cols': ['algo', 'tps_param'],
@@ -50,6 +50,7 @@ PLOT_KWARGS = {
             'y_label': 'Network Out (MB)',
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
+            'boxplot': True
         },
         'cpu': {
             'groupby_cols': ['algo', 'tps_param'],
@@ -57,7 +58,7 @@ PLOT_KWARGS = {
             'x_label': '# of Validators',
             'y_col': 'cpu_max_avg',
             'y_label': 'Max. CPU Usage (% of total)',
-            'y_range': [1.00, 1.5],
+            # 'y_range': [1.00, 1.5],
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'scale',
         },
@@ -72,7 +73,7 @@ PLOT_KWARGS = {
             'y_range': [0, 400],
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
-            # 'boxplot': True,
+            'boxplot': True,
         },
         'latency': {
             'groupby_cols': ['algo', 'n', 'tps_param'],
@@ -83,6 +84,7 @@ PLOT_KWARGS = {
             'y_label': 'Latency (ms)',
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
+            'boxplot': True,
         },
         'neto': {
             'groupby_cols': ['algo', 'n', 'tps_param'],
@@ -93,6 +95,7 @@ PLOT_KWARGS = {
             'y_label': 'Network Out (MB)',
             # 'transaction_types': ['open', 'transfer'],
             'img_fname': 'rate',
+            'boxplot': True,
         },
         'cpu': {
             'groupby_cols': ['algo', 'n', 'tps_param'],
