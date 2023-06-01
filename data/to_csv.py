@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import json
+import numpy as np
 import argparse
 import os
 import shutil
@@ -44,6 +45,13 @@ def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int
 
     df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
 
+
+    def fix_cpu_usage(col):
+        _tmp = np.array(df[col].values.tolist())
+        df[col] = np.where(_tmp <= 6, _tmp * 48, _tmp).tolist()
+    fix_cpu_usage('CPU%(avg)')
+    fix_cpu_usage('CPU%(max)')
+
     new_cols['cpu_max_all'].append(df['CPU%(max)'].max())
     new_cols['cpu_max_avg_all'].append(df['CPU%(avg)'].max())
 
@@ -54,7 +62,10 @@ def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int
     new_cols['neto_total_mb'].append(net_o_sum)
 
     new_cols['n'].append(test_params['N_VALIDATORS'])
-    new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
+    if test_params['CONSENSUS_ALGO'] == 'hotstuff':
+        new_cols['algo'].append('bhs')
+    else:
+        new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
     new_cols['tps_param'].append(int(test_params['TPS']))
     new_cols['cpu_limit'].append(test_params['CPU_LIMIT'])
     new_cols['r_idx'].append(r_idx)

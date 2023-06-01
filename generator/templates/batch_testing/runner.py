@@ -27,7 +27,7 @@ def run_all():
             print("Pruning!")
             subprocess.run(['docker', 'system', 'prune', '-f'], cwd=td_full)
 
-        runs = 5
+        runs = 10
         for idx in range(runs): # todo: argparse
             print(f"Starting {td_full} Run {idx + 1}...")
             total_tests += 1
