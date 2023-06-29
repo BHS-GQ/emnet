@@ -56,3 +56,7 @@ Where `<test_type>` can be:
 - `tps` (WIP)
 
 Note that `to_csv.py` skips failed tests. `gen_plots.py` only considers data poitns with 3 runs or more.
+
+## Experiment Logs
+
+Logs of the experiments can be found [here](https://drive.google.com/file/d/11bjGytybFbMGvbteNQo6xXYYx9IW399u/view?usp=sharing)
