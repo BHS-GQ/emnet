@@ -6,9 +6,10 @@ sudo apt update
 sudo apt-get -y install nodejs
 sudo apt-get -y install npm
 
-git clone -b v5 --single-branch https://github.com/BHS-GQ/caliper.git
+git clone --single-branch https://github.com/hyperledger/caliper.git
 (
     cd ~/caliper &&
+    git checkout 8cef10ccce9d75397152b2d37af2ea40699cd645 &&
     npm i &&
     npm run repoclean -- --yes &&
     npm run bootstrap

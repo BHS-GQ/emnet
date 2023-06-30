@@ -3,6 +3,7 @@
 A collection of supplementary files for the BHS in GoQuorum performance study. Included in this repo are:
 
 - Emulated network generation and experiment-running scripts
+    - Built for AWS (see diagram below)
 - Results fetching and plotting scripts
 - Experiment results (see `data/results/`)
 
@@ -10,7 +11,7 @@ EmNet generates GoQuorum networks for the following setup:
 
 ![Experimental setup diagram](experimental_setup.png)
 
-The `caliper` VM runs the benchmarking tool Hyperledger Caliper, which sends transactions over a VPC connection to the `network` VM, which runs the Docker emulated network. [`pumba`](https://github.com/alexei-led/pumba) is used to inject egress packet delay and bandwidth limits on each container. An NGINX load-balancer distributes transactions over the emulated network.
+The `caliper` VM runs the benchmarking tool Hyperledger Caliper, which sends transactions to the `network` VM, which runs the Docker emulated network. [`pumba`](https://github.com/alexei-led/pumba) is used to inject egress packet delay and bandwidth limits on each container. An NGINX load-balancer distributes transactions over the emulated network.
 
 ## Project Structure
 
