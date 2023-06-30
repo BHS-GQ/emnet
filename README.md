@@ -24,7 +24,7 @@ Experiment results are found in `data/results/`:
 
 ```bash
 results
-├── bl_rate         # baseline cond. send rate
+├── bl_rate                     # baseline cond. send rate
 │   ├── hotstuff_n=16_tps=100
 │   │   ├── report_1
 │   │   │   ├── params.json
@@ -36,13 +36,13 @@ results
 │   ├── hotstuff_n=16_tps=200
 │   ├── ...
 │   └── plots
-├── bl_scale        # baseline cond. scale
-├── bw_200          # BW-limited cond. at 200 TPS
-├── bw_400          # BW-limited cond. at 400 TPS
-├── bw_rate         # BW-limited cond. send rate
-├── bw_scale        # BW-limited cond. scale
-├── delay_rate      # delay-added cond. send rate
-└── delay_scale     # delay-added cond. scale
+├── bl_scale                    # baseline cond. scale
+├── bw_200                      # BW-limited cond. at 200 TPS
+├── bw_400                      # BW-limited cond. at 400 TPS
+├── bw_rate                     # BW-limited cond. send rate
+├── bw_scale                    # BW-limited cond. scale
+├── delay_rate                  # delay-added cond. send rate
+└── delay_scale                 # delay-added cond. scale
 ```
 
 Each test report contains the ff files:
@@ -82,7 +82,7 @@ local:~/emnet$ python3 gen_tests.py -t 100 200 300 400 -n 4 8 16 -c "2.50" -a "i
 
 Generated tests have the ff structure:
 
-```
+```bash
 generator/<test_dir_name>/
 ├── fetch_results.py
 ├── runner.py
@@ -140,3 +140,8 @@ local:~/emnet/data$ python3 gen_plots.py -t <test_dir_name> -k <test_type>
 Where `<test_type>` can be one of: `send_rate`, `scalabiltiy`, and `rate_limit` (BW-limit).
 
 Note that `to_csv.py` skips failed tests.
+
+
+## Credits
+
+- [ConsenSys Quorum Dev Quickstart](https://github.com/ConsenSys/quorum-dev-quickstart) as our basis for creating a Docker container network
