@@ -52,6 +52,7 @@ Each test report contains the ff files:
 
 All `report.html` files are processed by `to_csv.py` before plotting. See `plots.ipynb` for how plots were generated including $\Delta_{BHS}$ calculations. Direct plots of `report.html` metrics are found in the `plots/` subdirectories (see `gen_plots.py` in Usage).
 
+Experiment logs were uploaded to [GDrive](https://drive.google.com/file/d/1LPxNYiM-O6aioQQY8aXARVHLF7OLBAnB/view). [todo: upload to Zenodo]
 
 ## Usage
 
