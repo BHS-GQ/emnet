@@ -6,7 +6,7 @@ sudo apt update
 sudo apt-get -y install nodejs
 sudo apt-get -y install npm
 
-git clone -b v5 --single-branch https://github.com/ndsg-eth1/caliper.git
+git clone -b v5 --single-branch https://github.com/BHS-GQ/caliper.git
 (
     cd ~/caliper &&
     npm i &&

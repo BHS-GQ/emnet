@@ -37,3 +37,5 @@ sudo mkdir -p /etc/systemd/system/docker.service.d/
 sudo systemctl daemon-reload
 sleep 1
 sudo systemctl restart docker.service
+
+docker image pull gvlim/quorumbhs:0.0.0

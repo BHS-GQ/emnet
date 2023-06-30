@@ -12,13 +12,13 @@ EmNet generates GoQuorum networks for the following setup:
 
 The `caliper` VM runs the benchmarking tool Hyperledger Caliper, which sends transactions over a VPC connection to the `network` VM, which runs the Docker emulated network. [`pumba`](https://github.com/alexei-led/pumba) is used to inject egress packet delay and bandwidth limits on each container. An NGINX load-balancer distributes transactions over the emulated network.
 
-# Project Structure
+## Project Structure
 
 - `data/`: Experiment data and data processing scripts
 - `generator/`: Test-generation scripts and output
 - `scripts/`: VM installation scripts
 
-# Experiment Data
+## Experiment Data
 
 Experiment results are found in `data/results/`:
 
@@ -52,9 +52,9 @@ Each test report contains the ff files:
 All `report.html` files are processed by `to_csv.py` before plotting. See `plots.ipynb` for how plots were generated including $\Delta_{BHS}$ calculations. Direct plots of `report.html` metrics are found in the `plots/` subdirectories (see `gen_plots.py` in Usage).
 
 
-# Usage
+## Usage
 
-## Installation
+### Installation
 1. On the `caliper` VM, run the `install_cal.sh` script
 2. On the `network` VM, run the `install_net.sh` script
 3. Set `.env` values (see `.env.sample`). Our study used the same `.pem` file for both VMs.
@@ -64,11 +64,11 @@ All `report.html` files are processed by `to_csv.py` before plotting. See `plots
 local:~/emnet$ pip install -r requirements.txt
 ```
 
-## Running Tests
+### Running Tests
 
 *Make sure `.env` values are properly set*.
 
-### 1. Generating Tests
+#### 1. Generating Tests
 
 Use `gen_tests.py` to generate multiple tests. Examples below output to `generator/sample_tests`:
 
@@ -96,7 +96,7 @@ generator/<test_dir_name>/
 
 Each test directory (i.e. `hotstuff_n=...`) contains all the necessary files to run alone using the `hotstuff_n=.../test.py` script.
 
-### 2. Uploading Tests
+#### 2. Uploading Tests
 
 Run `upload_test.py`:
 
@@ -106,7 +106,7 @@ local:~/emnet$ python3 upload_test.py -t generator/<test_dir_name>
 
 This should upload the test directory to the network VM (i.e. `network:~/<test_dir_name>`).
 
-### 3. Running Tests
+#### 3. Running Tests
 
 On the network VM, run a `tmux` session in the test directory and run the ff:
 
@@ -120,7 +120,7 @@ You can optionally append `sudo shutdown -h now` to shutdown the VM after a test
 network:~/<test_dir_name>$ python3 runner.py; sudo shutdown -h now
 ```
 
-### 4. Fetching Results
+#### 4. Fetching Results
 
 ```bash
 local:~/emnet$ python3 get_results.py -t <test_dir_name>
@@ -128,7 +128,7 @@ local:~/emnet$ python3 get_results.py -t <test_dir_name>
 
 Test reports are placed in the `data/` directory. Logs are kept on the network VM (not fetched). 
 
-### 5. Generating Plots
+#### 5. Generating Plots
 
 Process and plot test data by running the ff:
 
