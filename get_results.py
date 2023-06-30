@@ -26,7 +26,7 @@ if __name__ == "__main__":
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(host, username=username, key_filename=keyfile)
 
-    _stdin, _stdout, _stderr = client.exec_command(f'cd {args.target.name}; python3 fetch_results.py -o temp; tar -czvf temp.tar.gz temp')
+    _stdin, _stdout, _stderr = client.exec_command(f'cd {args.target.name}; python3 fetch_results.py -o temp -l; tar -czvf temp.tar.gz temp')
     print(_stdout.read().decode())
     _stdin.close()
 

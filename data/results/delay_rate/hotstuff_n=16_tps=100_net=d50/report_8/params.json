@@ -1,0 +1,17 @@
+{
+    "GOQUORUM_CONS_ALGO": "hotstuff",
+    "BLOCK_PERIOD": "1",
+    "LOCK_FILE": ".quorumDevQuickstart.lock",
+    "CALIPER_WORKSPACE_PATH": "~/caliper-benchmarks",
+    "CONSENSUS_ALGO": "hotstuff",
+    "N_VALIDATORS": "16",
+    "TPS": "100",
+    "CPU_LIMIT": "2.50",
+    "NET_IP": "172.31.128.173",
+    "CAL_IP": "172.31.128.12",
+    "NET_PEM_FILE": "gvlim.pem",
+    "PUMBA_DELAY": "50",
+    "TIME_START": "21/05/2023 11:15:35",
+    "TIME_END": "21/05/2023 11:17:41",
+    "TIME_TAKEN": 125.76134729385376
+}

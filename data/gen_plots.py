@@ -65,25 +65,20 @@ def make_lineplot(
         grp = grp.sort_values(by=[x_col])
         main_key = key[0]
 
-        color = PLOT_DESIGNS[main_grp][main_key]['color']
-        marker = PLOT_DESIGNS[main_grp][main_key]['marker']
-        linestyle = PLOT_DESIGNS[main_grp][main_key]['ls']
-
         if y_range:
             ax.set_ylim(y_range)
 
         ax.plot(
             grp[x_col],
             grp[y_col],
-            color=color,
-            marker=marker,
-            linestyle=linestyle,
             linewidth=1,
             markerfacecolor='none',
-            label=f"{key[0]}"
+            label=f"{key[0]}",
+            **PLOT_DESIGNS[main_grp][main_key]
         )
 
         if boxplot:
+            color = PLOT_DESIGNS[main_grp][main_key]['color']
             if '_mean' not in y_col:
                 raise Exception(f'Cannot generate boxplot from {y_col}')
             y_col_all = f'{y_col.split("_")[0]}_all'
@@ -102,7 +97,6 @@ def make_lineplot(
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.title.set_size(11)
-    ax.legend()
 
 if __name__ == "__main__":
     df_raw = pd.read_csv(args.target / CSV_NAME)
@@ -111,15 +105,17 @@ if __name__ == "__main__":
     df['cpu_max_avg'] = df['cpu_max_avg'].div(100)
 
     for ttype in ['open', 'query', 'transfer']:
-        fig, ax = plt.subplots(2, 2, figsize=(10, 10))
+        fig, ax = plt.subplots(4, 1, figsize=(5, 10))
         idx = 0
-        ijcombs = [(0,0), (0,1), (1,0), (1,1)]
+        # ijcombs = [(0,0), (0,1), (1,0), (1,1)]
         for key, kwargs in PLOT_KWARGS[args.test_kind].items():
             print(f'Processing {args.test_kind} {ttype} {key}')
             kwargs['df'] = df
-            i, j =ijcombs[idx]
-            make_lineplot(ax=ax[i, j], transaction_type=ttype, **kwargs)
+            # i, j =ijcombs[idx]
+            make_lineplot(ax=ax[idx], transaction_type=ttype, **kwargs)
+            if idx == 0:
+                ax[0].legend()
             idx += 1
-
+        plt.subplots_adjust(hspace=0.5)
         img_path = PLOTS_DIR / f'{ttype}.png'
         plt.savefig(img_path, bbox_inches='tight')

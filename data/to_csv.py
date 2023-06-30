@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import json
+import numpy as np
 import argparse
 import os
 import shutil
@@ -31,24 +32,25 @@ def parse_rate_limit(rlim: str) -> int:
 
 
 def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int):
-    if 'Traffic In [MB]' in df.columns:
-        cols_to_numeric = [
-            'CPU%(avg)',
-            'CPU%(max)',
-            'Traffic In [MB]',
-            'Traffic Out [MB]',
-        ]
-        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
-    elif 'Traffic In [KB]' in df.columns:
-        cols_to_numeric = [
-            'CPU%(avg)',
-            'CPU%(max)',
-            'Traffic In [KB]',
-            'Traffic Out [KB]',
-        ]
-        df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
+    cols_to_numeric = [
+        'CPU%(avg)',
+        'CPU%(max)',
+        'Traffic In [MB]',
+        'Traffic Out [MB]'
+    ]
+    if 'Traffic In [KB]' in df.columns:
         df['Traffic In [MB]'] = df['Traffic In [KB]'] / 1000
+    if 'Traffic Out [KB]' in df.columns:
         df['Traffic Out [MB]'] = df['Traffic Out [KB]'] / 1000
+
+    df[cols_to_numeric] = df[cols_to_numeric].apply(pd.to_numeric, errors='coerce', axis=1)
+
+
+    def fix_cpu_usage(col):
+        _tmp = np.array(df[col].values.tolist())
+        df[col] = np.where(_tmp <= 6, _tmp * 48, _tmp).tolist()
+    fix_cpu_usage('CPU%(avg)')
+    fix_cpu_usage('CPU%(max)')
 
     new_cols['cpu_max_all'].append(df['CPU%(max)'].max())
     new_cols['cpu_max_avg_all'].append(df['CPU%(avg)'].max())
@@ -60,7 +62,10 @@ def get_new_cols(df: pd.DataFrame, new_cols: dict, test_params: dict, r_idx: int
     new_cols['neto_total_mb'].append(net_o_sum)
 
     new_cols['n'].append(test_params['N_VALIDATORS'])
-    new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
+    if test_params['CONSENSUS_ALGO'] == 'hotstuff':
+        new_cols['algo'].append('bhs')
+    else:
+        new_cols['algo'].append(test_params['CONSENSUS_ALGO'])
     new_cols['tps_param'].append(int(test_params['TPS']))
     new_cols['cpu_limit'].append(test_params['CPU_LIMIT'])
     new_cols['r_idx'].append(r_idx)
